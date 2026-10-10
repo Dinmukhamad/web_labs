@@ -9,7 +9,7 @@ Bootstrap 5 + SQLite (sql.js, хранится в IndexedDB), работает �
 
 - Вход: [`index.html`](index.html) · Регистрация: [`register.html`](register.html)
 - База данных: [`lab4/database.html`](lab4/database.html) (таблицы, SQL-консоль, скачивание `.sqlite`)
-- Код: [`lab4/`](lab4/) · Отчёт: [`lab4/report.html`](lab4/report.html)
+- Код: [`lab4/`](lab4/) · Отчёт: [`lab4/report.html`](lab4/report.html) · Краткий отчёт: [`lab4/short-report.html`](lab4/short-report.html)
 
 ## Lab 3 — Login (GET + POST + Cookie + Validation)
 

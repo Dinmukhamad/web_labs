@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Краткий отчёт Lab 4</title>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --card: #ffffff;
+            --text: #262626;
+            --muted: #8e8e8e;
+            --border: #dbdbdb;
+            --blue: #0095f6;
+            --code-bg: #f4f4f5;
+            --ok: #1a7f37;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #000000;
+                --card: #121212;
+                --text: #f5f5f5;
+                --muted: #a8a8a8;
+                --border: #363636;
+                --blue: #4cb5f9;
+                --code-bg: #1e1e1e;
+                --ok: #3fb950;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+        }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 28px; }
+        .brand { font-family: cursive; font-size: 28px; font-weight: bold; }
+        h1 { font-size: 26px; margin: 8px 0 4px; }
+        .meta { color: var(--muted); font-size: 14px; }
+        .actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            display: inline-block; padding: 7px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;
+            background: var(--blue); color: #fff;
+        }
+        .btn.secondary { background: var(--code-bg); color: var(--text); border: 1px solid var(--border); }
+        .btn:hover { text-decoration: none; opacity: .9; }
+        section { margin-bottom: 36px; }
+        h2 { font-size: 20px; margin-bottom: 12px; padding-top: 8px; }
+        h3 { font-size: 16px; margin: 18px 0 8px; }
+        p, li { font-size: 15px; }
+        p + p { margin-top: 8px; }
+        ul, ol { padding-left: 22px; }
+        li { margin: 4px 0; }
+        code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 10px 0;
+        }
+        pre code { background: none; padding: 0; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+        th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+        th { background: var(--code-bg); }
+        .ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 16px; }
+        figure { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        figure img { width: 100%; display: block; border-bottom: 1px solid var(--border); }
+        figcaption { font-size: 13px; padding: 8px 10px; color: var(--muted); }
+        .note { border-left: 3px solid var(--blue); background: var(--card); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 16px; }
+            @media print {
+            .actions { display: none; }
+            body { background: #fff; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">Web Labs</div>
+        <h1>Лабораторная работа №4 — краткий отчёт</h1>
+        <p class="meta">Database + Login + Registration + Framework · Пятничная группа · Студент: Dinmukhamad Pakhriddinov</p>
+        <div class="actions">
+            <a class="btn" href="../index.html">Открыть сайт</a>
+            <a class="btn secondary" href="report.html">Подробный отчёт</a>
+        </div>
+    </header>
+
+    <section>
+        <h2>Что сделано</h2>
+        <ul>
+            <li><b>Регистрация</b> — страница <code>register.html</code>: имя, логин, email, пароль, повтор пароля.</li>
+            <li><b>Вход</b> — страница <code>index.html</code>: по логину или email, есть «Запомнить меня».</li>
+            <li><b>База данных</b> — SQLite: таблица пользователей <code>users</code> и таблица сессий <code>sessions</code>.</li>
+            <li><b>Framework</b> — все формы и страницы оформлены на Bootstrap 5.</li>
+            <li>После входа открывается страница профиля в стиле Instagram с данными пользователя из базы.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Как это работает</h2>
+        <ol>
+            <li>При регистрации данные проверяются. Если всё верно, пользователь записывается в таблицу <code>users</code>. Пароль сохраняется не текстом, а в виде хеша.</li>
+            <li>При входе введённый пароль хешируется и сравнивается с хешем из базы.</li>
+            <li>Если пароль верный, в таблицу <code>sessions</code> записывается случайный токен, а в браузер — cookie с этим токеном.</li>
+            <li>Страница профиля проверяет токен по базе. Без входа она возвращает на страницу входа.</li>
+            <li>Кнопка «Выйти» удаляет сессию из базы и cookie.</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>Проверка данных</h2>
+        <ul>
+            <li>Имя — от 2 до 50 букв.</li>
+            <li>Логин — от 3 до 20 символов: латинские буквы, цифры, «_» и «.».</li>
+            <li>Email — правильный формат.</li>
+            <li>Пароль — от 8 символов, есть строчная и заглавная буква и цифра; повтор пароля совпадает.</li>
+            <li>Логин и email не должны быть заняты — это проверяется по базе.</li>
+        </ul>
+        <p>Ошибка показывается под каждым неправильным полем.</p>
+    </section>
+
+    <section>
+        <h2>Технологии</h2>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Что</th><th>Чем сделано</th></tr>
+            <tr><td>Страницы</td><td>HTML, CSS, JavaScript</td></tr>
+            <tr><td>Framework</td><td>Bootstrap 5 (формы, карточки, таблицы, меню, окна)</td></tr>
+            <tr><td>База данных</td><td>SQLite (библиотека sql.js), файл базы хранится в браузере</td></tr>
+            <tr><td>Пароли</td><td>Хеш PBKDF2 с солью</td></tr>
+            <tr><td>Сессия</td><td>Cookie с токеном + таблица <code>sessions</code></td></tr>
+            <tr><td>Хостинг</td><td>GitHub Pages</td></tr>
+        </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>Как проверить</h2>
+        <ol>
+            <li>Откройте сайт и нажмите «Зарегистрироваться».</li>
+            <li>Нажмите «Зарегистрироваться» с пустыми полями — появятся ошибки.</li>
+            <li>Заполните форму правильно — откроется вход с сообщением «Аккаунт создан».</li>
+            <li>Войдите — откроется профиль с вашим именем и email.</li>
+            <li>В меню профиля откройте «База данных» — там видно таблицы <code>users</code> и <code>sessions</code>.</li>
+            <li>Нажмите «Выйти» и попробуйте открыть <code>profile.html</code> — сайт вернёт на страницу входа.</li>
+        </ol>
+        <p>Готовый аккаунт: <b>dinmukhamad</b> / <b>Lab3pass</b>.</p>
+        <div class="note">База хранится в браузере, потому что на GitHub Pages нет сервера. Поэтому у каждого браузера своя база: аккаунт, созданный на одном компьютере, на другом не появится.</div>
+    </section>
+
+    <section>
+        <h2>Вывод</h2>
+        <p>Сделаны регистрация и вход с хранением пользователей в базе данных SQLite. Пароли хранятся в виде хеша, вход сохраняется через cookie и таблицу сессий, а введённые данные проверяются. Интерфейс оформлен с помощью фреймворка Bootstrap.</p>
+    </section>
+
+    <footer>Web Labs · Лабораторная работа №4 · 2026</footer>
+</div>
+</body>
+</html>
