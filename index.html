@@ -3,72 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dinmukhamad • Профиль Instagram</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Иконки FontAwesome -->
+    <title>Вход • Instagram</title>
+    <link rel="stylesheet" href="lab3/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="lab3/auth.js"></script>
+    <script>
+        // Уже вошёл (есть cookie) — сразу на страницу Instagram.
+        if (Auth.currentUser()) {
+            location.replace('profile.html');
+        }
+    </script>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Боковое / Нижнее меню -->
-        <nav class="sidebar">
-            <div class="logo">
-                <span class="logo-text">Instagram</span>
-                <i class="fab fa-instagram logo-icon"></i>
-            </div>
-            <ul class="nav-links">
-                <li><a href="index.html"><i class="fas fa-home"></i> <span class="nav-text">Главная</span></a></li>
-                <li><a href="#"><i class="fas fa-search"></i> <span class="nav-text">Поиск</span></a></li>
-                <li><a href="#"><i class="far fa-compass"></i> <span class="nav-text">Интересное</span></a></li>
-                <li><a href="#"><i class="far fa-play-circle"></i> <span class="nav-text">Reels</span></a></li>
-                <li><a href="#"><i class="far fa-envelope"></i> <span class="nav-text">Сообщения</span></a></li>
-                <li><a href="#"><i class="far fa-heart"></i> <span class="nav-text">Уведомления</span></a></li>
-                <li><a href="#"><i class="far fa-plus-square"></i> <span class="nav-text">Создать</span></a></li>
-                <li><a href="lab3/login.php"><i class="fas fa-sign-in-alt"></i> <span class="nav-text">Вход (Lab 3)</span></a></li>
-                <li><a href="lab3/report.html"><i class="far fa-file-alt"></i> <span class="nav-text">Отчёт Lab 3</span></a></li>
-                <li><a href="profile.html"><img src="profile.jpeg" class="profile-pic-micro" alt="Profile"> <span class="nav-text">Профиль</span></a></li>
-            </ul>
-        </nav>
+    <main class="auth-page">
+        <div class="auth-card">
+            <h1 class="auth-logo">Instagram</h1>
+            <p class="auth-subtitle">Войдите, чтобы открыть профиль</p>
 
-        <!-- Страница профиля -->
-        <main class="profile-main">
-            <div class="profile-container">
-                <!-- Шапка -->
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <img src="profile.jpeg" alt="dinmukhamad">
-                    </div>
-                    <div class="profile-info">
-                        <div class="profile-username-row">
-                            <h2>dinmukhamad</h2>
-                            <button class="profile-btn">Редактировать профиль</button>
-                            <button class="profile-btn">Архив</button>
-                        </div>
-                        <div class="profile-stats">
-                            <div><span>9</span> публикаций</div>
-                            <div><span>1,420</span> подписчиков</div>
-                            <div><span>380</span> подписок</div>
-                        </div>
-                        <div class="profile-bio">
-                            <h1>Dinmukhamad</h1>
-                            <p>🚀 Frontend Developer<br>💻 Создаю сайты на HTML & CSS<br>📍 Казахстан</p>
-                        </div>
-                    </div>
+            <div id="notice" class="alert alert-info" hidden></div>
+            <div id="form-error" class="alert alert-error" hidden></div>
+
+            <form id="login-form" class="auth-form" action="index.html" method="post"
+                  data-success="profile.html" novalidate>
+                <div class="field">
+                    <input type="text" id="username" name="username" placeholder="Имя пользователя"
+                           autocomplete="username" maxlength="20">
+                    <small class="field-error"></small>
                 </div>
 
-                <!-- Сетка фотографий -->
-                <div class="profile-grid">
-                    <div class="grid-item"><img src="1.jpg" alt="Post"></div>
-                    <div class="grid-item"><img src="2.jpg" alt="Post"></div>
-                    <div class="grid-item"><img src="3.jpg" alt="Post"></div>
-                    <div class="grid-item"><img src="4.jpg" alt="Post"></div>
-                    <div class="grid-item"><img src="profile.jpeg" alt="Post"></div>
+                <div class="field">
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password" placeholder="Пароль"
+                               autocomplete="current-password" maxlength="32">
+                        <button type="button" class="toggle-password" aria-label="Показать пароль">
+                            <i class="far fa-eye"></i>
+                        </button>
+                    </div>
+                    <small class="field-error"></small>
                 </div>
-            </div>
-        </main>
-    </div>
 
-    <!-- Подключение JS файла -->
-    <script src="script.js"></script>
+                <label class="remember">
+                    <input type="checkbox" name="remember">
+                    Запомнить меня (cookie на 7 дней)
+                </label>
+
+                <button type="submit" class="auth-btn">Войти</button>
+            </form>
+
+            <div class="divider"><span>ИЛИ</span></div>
+
+            <p class="hint">
+                Демо-аккаунт: <b>dinmukhamad</b> / <b>Lab3pass</b>
+            </p>
+        </div>
+
+        <div class="auth-card auth-card-small">
+            Lab 3 · GET + POST + Cookie + Validation · <a href="lab3/report.html">Отчёт</a>
+        </div>
+    </main>
+
+    <script>
+        // GET-параметры: сообщения (?logout=1, ?error=auth) и автозаполнение логина (?username=).
+        const params = new URLSearchParams(location.search);
+        const notice = document.getElementById('notice');
+
+        if (params.has('logout')) {
+            notice.textContent = 'Вы вышли из аккаунта.';
+            notice.hidden = false;
+        } else if (params.get('error') === 'auth') {
+            notice.textContent = 'Сначала войдите в аккаунт.';
+            notice.hidden = false;
+        }
+
+        const remembered = Auth.rememberedUser();
+        document.getElementById('username').value = params.get('username') ?? remembered ?? '';
+        document.querySelector('input[name=remember]').checked = remembered !== null;
+    </script>
+    <script src="lab3/login.js"></script>
 </body>
 </html>

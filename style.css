@@ -176,6 +176,12 @@ a {
     color: #262626;
 }
 
+.login-info {
+    margin-top: 8px;
+    font-size: 12px !important;
+    color: var(--light-text) !important;
+}
+
 /* СЕТКА ФОТОГРАФИЙ */
 .profile-grid {
     display: grid;
