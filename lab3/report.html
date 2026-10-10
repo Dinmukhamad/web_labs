@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчёт Lab 3 • Login</title>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --card: #ffffff;
+            --text: #262626;
+            --muted: #8e8e8e;
+            --border: #dbdbdb;
+            --blue: #0095f6;
+            --code-bg: #f4f4f5;
+            --ok: #1a7f37;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #000000;
+                --card: #121212;
+                --text: #f5f5f5;
+                --muted: #a8a8a8;
+                --border: #363636;
+                --blue: #4cb5f9;
+                --code-bg: #1e1e1e;
+                --ok: #3fb950;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+        }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 28px; }
+        .brand { font-family: cursive; font-size: 28px; font-weight: bold; }
+        h1 { font-size: 26px; margin: 8px 0 4px; }
+        .meta { color: var(--muted); font-size: 14px; }
+        .actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            display: inline-block; padding: 7px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;
+            background: var(--blue); color: #fff;
+        }
+        .btn.secondary { background: var(--code-bg); color: var(--text); border: 1px solid var(--border); }
+        .btn:hover { text-decoration: none; opacity: .9; }
+        section { margin-bottom: 36px; }
+        h2 { font-size: 20px; margin-bottom: 12px; padding-top: 8px; }
+        h3 { font-size: 16px; margin: 18px 0 8px; }
+        p, li { font-size: 15px; }
+        p + p { margin-top: 8px; }
+        ul, ol { padding-left: 22px; }
+        li { margin: 4px 0; }
+        code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 10px 0;
+        }
+        pre code { background: none; padding: 0; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+        th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+        th { background: var(--code-bg); }
+        .ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        figure { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        figure img { width: 100%; display: block; border-bottom: 1px solid var(--border); }
+        figcaption { font-size: 13px; padding: 8px 10px; color: var(--muted); }
+        .note { border-left: 3px solid var(--blue); background: var(--card); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 16px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">Web Labs</div>
+        <h1>Лабораторная работа №3 — Login</h1>
+        <p class="meta">GET + POST + Cookie + Validation · Пятничная группа · Студент: Dinmukhamad Pakhriddinov</p>
+        <div class="actions">
+            <a class="btn" href="login.php">Открыть страницу входа</a>
+            <a class="btn secondary" href="../index.html">← На главную сайта</a>
+        </div>
+    </header>
+
+    <section>
+        <h2>1. Цель работы</h2>
+        <p>Создать на своём сайте страницу авторизации, которая:</p>
+        <ul>
+            <li>принимает данные формы методом <b>POST</b> и использует <b>GET</b>-параметры для навигации и сообщений;</li>
+            <li>сохраняет состояние входа и «запомненный» логин в <b>cookie</b>;</li>
+            <li>проверяет введённые данные (<b>валидация</b>) на стороне клиента (JavaScript) и сервера (PHP).</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>2. Теория</h2>
+        <h3>GET и POST</h3>
+        <div class="table-wrap">
+        <table>
+            <tr><th></th><th>GET</th><th>POST</th></tr>
+            <tr><td>Где передаются данные</td><td>В строке URL: <code>?tab=cookies</code></td><td>В теле HTTP-запроса</td></tr>
+            <tr><td>Видимость</td><td>Видны в адресной строке, истории, логах</td><td>Не видны в URL</td></tr>
+            <tr><td>Назначение</td><td>Получение данных, без изменения состояния</td><td>Отправка данных, изменение состояния (вход, выход)</td></tr>
+            <tr><td>В PHP</td><td><code>$_GET</code></td><td><code>$_POST</code></td></tr>
+            <tr><td>В лабораторной</td><td>Показ формы, <code>?logout=1</code>, <code>?error=auth</code>, <code>?username=</code>, вкладки <code>?tab=</code></td><td>Отправка логина и пароля, выход (<code>logout.php</code>)</td></tr>
+        </table>
+        </div>
+        <p>Пароль никогда не передаётся через GET, иначе он попадёт в историю браузера и логи сервера.</p>
+
+        <h3>Cookie</h3>
+        <p>Cookie — небольшие данные, которые сервер передаёт браузеру заголовком <code>Set-Cookie</code>, а браузер возвращает их в каждом следующем запросе заголовком <code>Cookie</code>. В PHP cookie устанавливаются функцией <code>setcookie()</code> и читаются из <code>$_COOKIE</code>.</p>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Cookie</th><th>Значение</th><th>Срок</th><th>Зачем</th></tr>
+            <tr><td><code>auth_user</code></td><td><code>логин|HMAC-подпись</code></td><td>До закрытия браузера</td><td>Признак входа. Подпись не даёт подделать cookie вручную.</td></tr>
+            <tr><td><code>remember_login</code></td><td>логин</td><td>7 дней</td><td>Автозаполнение поля «Имя пользователя» (галочка «Запомнить меня»).</td></tr>
+            <tr><td><code>last_visit</code></td><td>дата и время входа</td><td>7 дней</td><td>Показывается на странице после входа.</td></tr>
+        </table>
+        </div>
+        <p>Все cookie ставятся с флагами <code>HttpOnly</code> (недоступны из JavaScript) и <code>SameSite=Lax</code> (защита от CSRF).</p>
+
+        <h3>Валидация</h3>
+        <p><b>Клиентская</b> (JavaScript) — даёт мгновенную подсказку, но её легко обойти. <b>Серверная</b> (PHP) — обязательна, потому что именно она защищает приложение. В работе используются одинаковые правила на обеих сторонах:</p>
+        <ul>
+            <li><b>Имя пользователя:</b> обязательно, 3–20 символов, только <code>a–z A–Z 0–9 _ .</code></li>
+            <li><b>Пароль:</b> обязателен, 6–32 символа, минимум одна буква и одна цифра.</li>
+            <li>После проверки формата — сравнение с хешем пароля через <code>password_verify()</code>.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>3. Структура файлов</h2>
+<pre><code>web_labs/
+├── index.html          главная страница сайта (ссылка на Lab 3 в меню)
+└── lab3/
+    ├── config.php      пользователь, функции cookie, валидация
+    ├── login.php       форма входа: GET — показ, POST — проверка
+    ├── welcome.php     защищённая страница (проверяет cookie), вкладки ?tab=
+    ├── logout.php      выход (только POST), удаляет auth-cookie
+    ├── login.js        клиентская валидация
+    ├── login.css       стили в стиле Instagram
+    ├── report.html     этот отчёт
+    └── screenshots/    скриншоты</code></pre>
+    </section>
+
+    <section>
+        <h2>4. Реализация</h2>
+
+        <h3>4.1 Обработка GET и POST (login.php)</h3>
+<pre><code>if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim((string)($_POST['username'] ?? ''));
+    $password = (string)($_POST['password'] ?? '');
+    $remember = isset($_POST['remember']);
+
+    $errors = validate_login($username, $password);
+
+    if (!$errors) {
+        $hash = USERS[$username] ?? null;
+        if ($hash === null || !password_verify($password, $hash)) {
+            $errors['form'] = 'Неверное имя пользователя или пароль.';
+        }
+    }
+
+    if (!$errors) {
+        set_app_cookie(AUTH_COOKIE, sign_user($username));
+        set_app_cookie(VISIT_COOKIE, date('d.m.Y H:i:s'), time() + REMEMBER_TTL);
+        $remember
+            ? set_app_cookie(REMEMBER_COOKIE, $username, time() + REMEMBER_TTL)
+            : delete_app_cookie(REMEMBER_COOKIE);
+
+        redirect('welcome.php?tab=profile');   // Post/Redirect/Get
+    }
+} else {
+    // GET: автозаполнение логина из ?username= или из cookie
+    $username = trim((string)($_GET['username'] ?? ($_COOKIE[REMEMBER_COOKIE] ?? '')));
+    if (isset($_GET['logout']))              $notice = 'Вы вышли из аккаунта.';
+    elseif (($_GET['error'] ?? '') === 'auth') $notice = 'Сначала войдите в аккаунт.';
+}</code></pre>
+        <p>После успешного POST выполняется перенаправление (шаблон <b>Post/Redirect/Get</b>), поэтому обновление страницы не отправляет форму повторно.</p>
+
+        <h3>4.2 Установка cookie (config.php)</h3>
+<pre><code>function set_app_cookie(string $name, string $value, int $expires = 0): void
+{
+    setcookie($name, $value, [
+        'expires'  => $expires,
+        'path'     => '/',
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    ]);
+}
+
+function sign_user(string $username): string
+{
+    return $username . '|' . hash_hmac('sha256', $username, COOKIE_SECRET);
+}
+
+function current_user(): ?string
+{
+    $raw = $_COOKIE[AUTH_COOKIE] ?? '';
+    if (!is_string($raw) || !str_contains($raw, '|')) return null;
+    [$username, $signature] = explode('|', $raw, 2);
+    $expected = hash_hmac('sha256', $username, COOKIE_SECRET);
+    if (!hash_equals($expected, $signature) || !isset(USERS[$username])) return null;
+    return $username;
+}</code></pre>
+
+        <h3>4.3 Серверная валидация (config.php)</h3>
+<pre><code>function validate_login(string $username, string $password): array
+{
+    $errors = [];
+    if ($username === '') {
+        $errors['username'] = 'Введите имя пользователя.';
+    } elseif (mb_strlen($username) &lt; 3 || mb_strlen($username) &gt; 20) {
+        $errors['username'] = 'Имя пользователя должно быть от 3 до 20 символов.';
+    } elseif (!preg_match('/^[a-zA-Z0-9_.]+$/', $username)) {
+        $errors['username'] = 'Допустимы только латинские буквы, цифры, «_» и «.».';
+    }
+
+    if ($password === '') {
+        $errors['password'] = 'Введите пароль.';
+    } elseif (mb_strlen($password) &lt; 6 || mb_strlen($password) &gt; 32) {
+        $errors['password'] = 'Пароль должен быть от 6 до 32 символов.';
+    } elseif (!preg_match('/[A-Za-z]/', $password) || !preg_match('/\d/', $password)) {
+        $errors['password'] = 'Пароль должен содержать хотя бы одну букву и одну цифру.';
+    }
+    return $errors;
+}</code></pre>
+
+        <h3>4.4 Клиентская валидация (login.js)</h3>
+<pre><code>form.addEventListener('submit', (event) =&gt; {
+    const okUser = validateField('username');
+    const okPass = validateField('password');
+    if (!okUser || !okPass) {
+        event.preventDefault();   // форма не уходит на сервер
+    }
+});</code></pre>
+
+        <h3>4.5 Защищённая страница и GET-параметр (welcome.php)</h3>
+<pre><code>$user = current_user();
+if ($user === null) {
+    redirect('login.php?error=auth');
+}
+
+// GET-параметр tab проверяется по белому списку
+$tabs = ['profile' =&gt; 'Профиль', 'cookies' =&gt; 'Cookies', 'request' =&gt; 'Запрос'];
+$tab  = (string)($_GET['tab'] ?? 'profile');
+if (!array_key_exists($tab, $tabs)) {
+    $tab = 'profile';
+}</code></pre>
+
+        <h3>4.6 Безопасность</h3>
+        <ul>
+            <li>Пароль хранится только как хеш (<code>password_hash</code> / <code>password_verify</code>).</li>
+            <li>Весь вывод экранируется функцией <code>htmlspecialchars</code> (защита от XSS).</li>
+            <li>Auth-cookie подписана HMAC-SHA256, сравнение через <code>hash_equals</code>.</li>
+            <li>Выход выполняется только POST-запросом; GET на <code>logout.php</code> возвращает <code>405</code>.</li>
+            <li>При неверном логине или пароле выводится общее сообщение, чтобы нельзя было узнать, какие логины существуют.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>5. Тестирование</h2>
+        <div class="table-wrap">
+        <table>
+            <tr><th>#</th><th>Действие</th><th>Ожидаемый результат</th><th>Итог</th></tr>
+            <tr><td>1</td><td>GET <code>login.php</code></td><td>Форма входа, код 200</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>2</td><td>GET <code>welcome.php</code> без cookie</td><td>302 → <code>login.php?error=auth</code></td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>3</td><td>POST с пустыми полями</td><td>«Введите имя пользователя.», «Введите пароль.»</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>4</td><td>POST <code>username=ab&lt;script</code>, <code>password=abc</code></td><td>Ошибки формата, значение экранировано</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>5</td><td>POST с неверным паролем</td><td>«Неверное имя пользователя или пароль.»</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>6</td><td>POST с верными данными + «Запомнить меня»</td><td>3 заголовка <code>Set-Cookie</code>, 302 → <code>welcome.php</code></td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>7</td><td>GET <code>welcome.php?tab=cookies</code></td><td>Таблица cookie</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>8</td><td>GET <code>welcome.php?tab=evil</code></td><td>Открывается вкладка «Профиль»</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>9</td><td>Поддельная cookie <code>auth_user=dinmukhamad|deadbeef</code></td><td>302 → <code>login.php?error=auth</code></td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>10</td><td>GET <code>logout.php</code></td><td>405 Method Not Allowed</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>11</td><td>POST <code>logout.php</code></td><td>auth-cookie удалена, 302 → <code>login.php?logout=1</code></td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>12</td><td>GET <code>login.php?logout=1</code> после выхода</td><td>«Вы вышли из аккаунта.», логин подставлен из cookie</td><td class="ok">✓ Пройден</td></tr>
+        </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>6. Скриншоты</h2>
+        <div class="gallery">
+            <figure><img src="screenshots/01-login-get.png" alt="Форма входа" loading="lazy"><figcaption>1. Форма входа (GET)</figcaption></figure>
+            <figure><img src="screenshots/02-client-validation.png" alt="Клиентская валидация" loading="lazy"><figcaption>2. Клиентская валидация (JS)</figcaption></figure>
+            <figure><img src="screenshots/03-server-validation.png" alt="Серверная валидация" loading="lazy"><figcaption>3. Серверная валидация (PHP, JS обойдён)</figcaption></figure>
+            <figure><img src="screenshots/04-wrong-password.png" alt="Неверный пароль" loading="lazy"><figcaption>4. Неверный пароль (POST)</figcaption></figure>
+            <figure><img src="screenshots/05-welcome.png" alt="Успешный вход" loading="lazy"><figcaption>5. Успешный вход</figcaption></figure>
+            <figure><img src="screenshots/06-cookies.png" alt="Cookie" loading="lazy"><figcaption>6. Установленные cookie</figcaption></figure>
+            <figure><img src="screenshots/07-get-params.png" alt="GET-параметры" loading="lazy"><figcaption>7. GET-параметр <code>?tab=request</code></figcaption></figure>
+            <figure><img src="screenshots/08-logout.png" alt="Выход" loading="lazy"><figcaption>8. Выход, логин запомнен в cookie</figcaption></figure>
+            <figure><img src="screenshots/09-protected-redirect.png" alt="Защищённая страница" loading="lazy"><figcaption>9. Доступ без cookie → перенаправление</figcaption></figure>
+        </div>
+    </section>
+
+    <section>
+        <h2>7. Как запустить</h2>
+        <p>Страницы входа написаны на PHP, поэтому нужен сервер с PHP (≥ 8.0). Локально:</p>
+<pre><code>cd web_labs
+php -S localhost:8000
+# открыть http://localhost:8000/lab3/login.php
+# демо-аккаунт: dinmukhamad / Lab3pass</code></pre>
+        <div class="note">GitHub Pages отдаёт только статические файлы и не выполняет PHP, поэтому на GitHub Pages открывается этот отчёт, а сама форма входа работает на сервере с PHP (локально через <code>php -S</code> или на любом PHP-хостинге).</div>
+    </section>
+
+    <section>
+        <h2>8. Вывод</h2>
+        <p>В ходе работы была создана страница авторизации для сайта. Разобрана разница между методами GET и POST: GET используется для получения страниц и передачи неконфиденциальных параметров (сообщения, вкладки), POST — для отправки логина и пароля и для выхода. Состояние входа хранится в подписанной cookie, а функция «Запомнить меня» реализована через cookie со сроком жизни 7 дней. Введённые данные проверяются дважды: в браузере (JavaScript) для удобства пользователя и на сервере (PHP) для безопасности. Все 12 тестовых сценариев пройдены.</p>
+    </section>
+
+    <footer>Web Labs · Лабораторная работа №3 · 2026</footer>
+</div>
+</body>
+</html>
