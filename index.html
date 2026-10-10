@@ -4,81 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход • Instagram</title>
-    <link rel="stylesheet" href="lab3/login.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="lab3/auth.js"></script>
-    <script>
-        // Уже вошёл (есть cookie) — сразу на страницу Instagram.
-        if (Auth.currentUser()) {
-            location.replace('profile.html');
-        }
-    </script>
+    <!-- Framework: Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="lab4/lab4.css">
+    <!-- Database: SQLite (sql.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+    <script src="lab4/validation.js"></script>
+    <script src="lab4/db.js"></script>
+    <script src="lab4/auth.js"></script>
+    <script src="lab4/forms.js"></script>
 </head>
 <body>
-    <main class="auth-page">
-        <div class="auth-card">
-            <h1 class="auth-logo">Instagram</h1>
-            <p class="auth-subtitle">Войдите, чтобы открыть профиль</p>
+    <main class="container min-vh-100 d-flex flex-column justify-content-center align-items-center py-4">
+        <div class="card auth-card w-100 shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="brand-logo text-center mb-1">Instagram</h1>
+                <p class="text-center text-body-secondary small mb-4">Войдите, чтобы открыть профиль</p>
 
-            <div id="notice" class="alert alert-info" hidden></div>
-            <div id="form-error" class="alert alert-error" hidden></div>
+                <div id="notice" class="alert" role="alert" hidden></div>
 
-            <form id="login-form" class="auth-form" action="index.html" method="post"
-                  data-success="profile.html" novalidate>
-                <div class="field">
-                    <input type="text" id="username" name="username" placeholder="Имя пользователя"
-                           autocomplete="username" maxlength="20">
-                    <small class="field-error"></small>
-                </div>
-
-                <div class="field">
-                    <div class="password-wrap">
-                        <input type="password" id="password" name="password" placeholder="Пароль"
-                               autocomplete="current-password" maxlength="32">
-                        <button type="button" class="toggle-password" aria-label="Показать пароль">
-                            <i class="far fa-eye"></i>
-                        </button>
+                <form id="login-form" action="index.html" method="post" novalidate>
+                    <div class="form-floating mb-1">
+                        <input type="text" class="form-control" id="login" name="login"
+                               placeholder="Имя пользователя или email" autocomplete="username" maxlength="100">
+                        <label for="login">Имя пользователя или email</label>
                     </div>
-                    <small class="field-error"></small>
-                </div>
+                    <div class="invalid-feedback mb-2" data-for="login"></div>
 
-                <label class="remember">
-                    <input type="checkbox" name="remember">
-                    Запомнить меня (cookie на 7 дней)
-                </label>
+                    <div class="input-group mt-2 mb-1">
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="loginPassword" name="loginPassword"
+                                   placeholder="Пароль" autocomplete="current-password" maxlength="64">
+                            <label for="loginPassword">Пароль</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary" data-toggle-password="loginPassword"
+                                aria-label="Показать пароль"><i class="bi bi-eye"></i></button>
+                    </div>
+                    <div class="invalid-feedback mb-2" data-for="loginPassword"></div>
 
-                <button type="submit" class="auth-btn">Войти</button>
-            </form>
+                    <div class="form-check my-3">
+                        <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                        <label class="form-check-label small" for="remember">Запомнить меня на 7 дней</label>
+                    </div>
 
-            <div class="divider"><span>ИЛИ</span></div>
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" aria-hidden="true"></span>
+                        Войти
+                    </button>
+                </form>
 
-            <p class="hint">
-                Демо-аккаунт: <b>dinmukhamad</b> / <b>Lab3pass</b>
-            </p>
+                <div class="or-divider my-4">ИЛИ</div>
+
+                <p class="text-center small text-body-secondary mb-0">
+                    Демо-аккаунт: <b>dinmukhamad</b> / <b>Lab3pass</b>
+                </p>
+            </div>
         </div>
 
-        <div class="auth-card auth-card-small">
-            Lab 3 · GET + POST + Cookie + Validation · <a href="lab3/report.html">Отчёт</a>
+        <div class="card auth-card w-100 shadow-sm mt-3">
+            <div class="card-body text-center small">
+                Нет аккаунта? <a href="register.html" class="fw-semibold text-decoration-none">Зарегистрироваться</a>
+            </div>
         </div>
+
+        <p class="small text-body-secondary mt-3 mb-0 text-center">
+            Lab 4 · Bootstrap + SQLite ·
+            <a href="lab4/report.html">Отчёт Lab 4</a> · <a href="lab3/report.html">Отчёт Lab 3</a>
+        </p>
     </main>
 
     <script>
-        // GET-параметры: сообщения (?logout=1, ?error=auth) и автозаполнение логина (?username=).
-        const params = new URLSearchParams(location.search);
+        const form = document.getElementById('login-form');
         const notice = document.getElementById('notice');
+        const params = new URLSearchParams(location.search);
 
-        if (params.has('logout')) {
-            notice.textContent = 'Вы вышли из аккаунта.';
-            notice.hidden = false;
-        } else if (params.get('error') === 'auth') {
-            notice.textContent = 'Сначала войдите в аккаунт.';
-            notice.hidden = false;
+        // Уже вошёл (сессия есть в базе) — сразу на страницу Instagram.
+        if (Auth.hasSession()) {
+            Auth.currentUser().then((user) => user && location.replace('profile.html'));
         }
 
-        const remembered = Auth.rememberedUser();
-        document.getElementById('username').value = params.get('username') ?? remembered ?? '';
-        document.querySelector('input[name=remember]').checked = remembered !== null;
+        // GET-параметры: сообщения и автозаполнение логина.
+        if (params.has('registered')) {
+            Forms.alert(notice, 'success', 'Аккаунт создан. Теперь войдите.');
+        } else if (params.has('logout')) {
+            Forms.alert(notice, 'info', 'Вы вышли из аккаунта.');
+        } else if (params.get('error') === 'auth') {
+            Forms.alert(notice, 'warning', 'Сначала войдите в аккаунт.');
+        }
+        form.elements.login.value = params.get('login') ?? '';
+        if (form.elements.login.value) form.elements.loginPassword.focus();
+
+        Forms.bindPasswordToggles();
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // сервера нет — форму обрабатывает JavaScript
+            const button = form.querySelector('button[type=submit]');
+            const errors = Validation.login({
+                login: form.elements.login.value.trim(),
+                loginPassword: form.elements.loginPassword.value,
+            });
+            Forms.showErrors(form, errors, ['login', 'loginPassword'], false);
+            if (Object.keys(errors).length) return;
+
+            Forms.busy(button, true);
+            try {
+                const result = await Auth.login(
+                    form.elements.login.value,
+                    form.elements.loginPassword.value,
+                    form.elements.remember.checked,
+                );
+                if (result.ok) {
+                    location.href = 'profile.html';
+                    return;
+                }
+                form.elements.loginPassword.value = '';
+                Forms.setError(form, 'loginPassword', '', false);
+                Forms.alert(notice, 'danger', result.errors.form);
+            } catch (error) {
+                Forms.alert(notice, 'danger', 'Не удалось открыть базу данных: ' + error.message);
+            } finally {
+                Forms.busy(button, false);
+            }
+        });
     </script>
-    <script src="lab3/login.js"></script>
 </body>
 </html>

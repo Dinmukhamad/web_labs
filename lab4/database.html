@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База данных • Lab 4</title>
+    <!-- Framework: Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="lab4.css">
+    <style>.auth-pending body { visibility: hidden; }</style>
+    <!-- Database: SQLite (sql.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+    <script src="validation.js"></script>
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        document.documentElement.classList.add('auth-pending');
+        if (!Auth.hasSession()) {
+            location.replace('../index.html?error=auth');
+        }
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand bg-white border-bottom sticky-top">
+        <div class="container">
+            <a class="navbar-brand brand-logo fs-3" href="../profile.html">Instagram</a>
+            <div class="navbar-nav ms-auto align-items-center gap-2">
+                <a class="nav-link" href="../profile.html"><i class="bi bi-person-circle"></i><span class="d-none d-sm-inline"> Профиль</span></a>
+                <a class="nav-link" href="report.html"><i class="bi bi-file-earmark-text"></i><span class="d-none d-sm-inline"> Отчёт</span></a>
+                <button id="logout" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-right"></i> Выйти</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div>
+                <h1 class="h3 mb-1"><i class="bi bi-database"></i> База данных</h1>
+                <p class="text-body-secondary small mb-0">SQLite (sql.js) · хранится в IndexedDB этого браузера · вы вошли как <b id="me"></b></p>
+            </div>
+            <div class="d-flex gap-2">
+                <button id="download" class="btn btn-outline-primary btn-sm"><i class="bi bi-download"></i> Скачать .sqlite</button>
+                <button id="reset" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#reset-modal"><i class="bi bi-arrow-counterclockwise"></i> Сбросить</button>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card text-center shadow-sm"><div class="card-body">
+                    <div class="fs-3 fw-bold" id="count-users">0</div>
+                    <div class="small text-body-secondary">пользователей</div>
+                </div></div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center shadow-sm"><div class="card-body">
+                    <div class="fs-3 fw-bold" id="count-sessions">0</div>
+                    <div class="small text-body-secondary">активных сессий</div>
+                </div></div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold">Таблица <code>users</code></div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr><th>id</th><th>username</th><th>full_name</th><th>email</th><th>password_hash</th><th>created_at</th><th>last_login</th></tr>
+                    </thead>
+                    <tbody id="users"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-semibold">Таблица <code>sessions</code></div>
+            <div class="table-responsive">
+                <table class="table table-hover table-sm align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr><th>token</th><th>user</th><th>created_at</th><th>expires_at</th></tr>
+                    </thead>
+                    <tbody id="sessions"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white fw-semibold"><i class="bi bi-terminal"></i> SQL-консоль</div>
+            <div class="card-body">
+                <form id="sql-form">
+                    <textarea id="sql" class="form-control sql-console mb-2" rows="3" spellcheck="false">SELECT id, username, email, created_at FROM users ORDER BY id;</textarea>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-play-fill"></i> Выполнить</button>
+                        <button type="button" class="btn btn-link btn-sm" data-sql="SELECT name, sql FROM sqlite_master WHERE type = 'table';">Схема</button>
+                        <button type="button" class="btn btn-link btn-sm" data-sql="SELECT u.username, COUNT(s.token) AS sessions FROM users u LEFT JOIN sessions s ON s.user_id = u.id GROUP BY u.id;">Сессии по пользователям</button>
+                    </div>
+                </form>
+                <div id="sql-result" class="mt-3"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="reset-modal" tabindex="-1" aria-labelledby="reset-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="reset-title">Сбросить базу данных?</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">Все зарегистрированные пользователи и сессии будут удалены. Останется только демо-аккаунт <b>dinmukhamad</b>.</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="reset-confirm">Сбросить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const short = (value, length) => (value && value.length > length ? value.slice(0, length) + '…' : value ?? '—');
+
+        // Строка таблицы через textContent — данные из базы не попадают в HTML как код.
+        function row(cells, tag = 'td') {
+            const tr = document.createElement('tr');
+            for (const cell of cells) {
+                const td = document.createElement(tag);
+                td.textContent = cell ?? '—';
+                tr.append(td);
+            }
+            return tr;
+        }
+
+        function render() {
+            const users = Db.query('SELECT * FROM users ORDER BY id');
+            const sessions = Db.query(
+                `SELECT s.token, u.username, s.created_at, s.expires_at
+                 FROM sessions s JOIN users u ON u.id = s.user_id
+                 WHERE s.expires_at > datetime('now') ORDER BY s.created_at DESC`,
+            );
+            document.getElementById('count-users').textContent = users.length;
+            document.getElementById('count-sessions').textContent = sessions.length;
+            document.getElementById('users').replaceChildren(...users.map((u) => row([
+                u.id, u.username, u.full_name, u.email, short(u.password_hash, 16),
+                Auth.formatDate(u.created_at), Auth.formatDate(u.last_login),
+            ])));
+            document.getElementById('sessions').replaceChildren(...sessions.map((s) => row([
+                short(s.token, 16), s.username, Auth.formatDate(s.created_at), Auth.formatDate(s.expires_at),
+            ])));
+        }
+
+        function showSqlResult(results) {
+            const box = document.getElementById('sql-result');
+            if (!results.length) {
+                box.innerHTML = '<div class="alert alert-success py-2 small mb-0">Запрос выполнен.</div>';
+                return;
+            }
+            box.replaceChildren(...results.map(({ columns, values }) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'table-responsive';
+                const table = document.createElement('table');
+                table.className = 'table table-bordered table-sm small mb-2';
+                const head = document.createElement('thead');
+                head.className = 'table-light';
+                head.append(row(columns, 'th'));
+                const body = document.createElement('tbody');
+                body.append(...values.map((values) => row(values)));
+                table.append(head, body);
+                wrap.append(table);
+                return wrap;
+            }));
+        }
+
+        (async () => {
+            const user = await Auth.currentUser();
+            if (!user) {
+                location.replace('../index.html?error=auth');
+                return;
+            }
+            document.getElementById('me').textContent = user.username;
+            render();
+            document.documentElement.classList.remove('auth-pending');
+        })();
+
+        document.getElementById('sql-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const box = document.getElementById('sql-result');
+            try {
+                showSqlResult(Db.exec(document.getElementById('sql').value));
+                await Db.save();
+                render();
+            } catch (error) {
+                box.replaceChildren();
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger py-2 small mb-0';
+                alert.textContent = 'Ошибка SQL: ' + error.message;
+                box.append(alert);
+            }
+        });
+
+        document.querySelectorAll('[data-sql]').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.getElementById('sql').value = button.dataset.sql;
+                document.getElementById('sql-form').requestSubmit();
+            });
+        });
+
+        document.getElementById('download').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(Db.exportFile());
+            link.download = 'web_labs.sqlite';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+
+        document.getElementById('reset-confirm').addEventListener('click', async () => {
+            await Db.reset();
+            location.replace('../index.html?logout=1'); // сессии удалены вместе с базой
+        });
+
+        document.getElementById('logout').addEventListener('click', async () => {
+            await Auth.logout();
+            location.replace('../index.html?logout=1');
+        });
+    </script>
+</body>
+</html>
