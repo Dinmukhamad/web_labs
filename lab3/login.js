@@ -1,5 +1,5 @@
-// Клиентская валидация формы входа (дублирует серверные правила для мгновенной обратной связи).
-// Сервер всё равно проверяет данные повторно — JS можно отключить или обойти.
+// Валидация формы входа и вход через cookie (Auth из auth.js).
+// Сайт размещён на GitHub Pages, сервера нет, поэтому отправку формы обрабатывает JavaScript.
 
 const form = document.getElementById('login-form');
 
@@ -29,12 +29,31 @@ function validateField(name) {
     return message === '';
 }
 
+function showFormError(message) {
+    const box = document.getElementById('form-error');
+    box.textContent = message;
+    box.hidden = message === '';
+}
+
 if (form) {
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
         const okUser = validateField('username');
         const okPass = validateField('password');
         if (!okUser || !okPass) {
-            event.preventDefault();
+            return;
+        }
+
+        const ok = await Auth.login(
+            form.elements.username.value.trim(),
+            form.elements.password.value,
+            form.elements.remember.checked,
+        );
+        if (ok) {
+            location.href = form.dataset.success;
+        } else {
+            form.elements.password.value = '';
+            showFormError('Неверное имя пользователя или пароль.');
         }
     });
 

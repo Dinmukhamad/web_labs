@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dinmukhamad • Профиль Instagram</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Иконки FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lab 3: страница доступна только после входа (проверка cookie) -->
+    <script src="lab3/auth.js"></script>
+    <script>
+        if (!Auth.currentUser()) {
+            location.replace('index.html?error=auth');
+        }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Боковое / Нижнее меню -->
+        <nav class="sidebar">
+            <div class="logo">
+                <span class="logo-text">Instagram</span>
+                <i class="fab fa-instagram logo-icon"></i>
+            </div>
+            <ul class="nav-links">
+                <li><a href="profile.html"><i class="fas fa-home"></i> <span class="nav-text">Главная</span></a></li>
+                <li><a href="#"><i class="fas fa-search"></i> <span class="nav-text">Поиск</span></a></li>
+                <li><a href="#"><i class="far fa-compass"></i> <span class="nav-text">Интересное</span></a></li>
+                <li><a href="#"><i class="far fa-play-circle"></i> <span class="nav-text">Reels</span></a></li>
+                <li><a href="#"><i class="far fa-envelope"></i> <span class="nav-text">Сообщения</span></a></li>
+                <li><a href="#"><i class="far fa-heart"></i> <span class="nav-text">Уведомления</span></a></li>
+                <li><a href="#"><i class="far fa-plus-square"></i> <span class="nav-text">Создать</span></a></li>
+                <li><a href="lab3/report.html"><i class="far fa-file-alt"></i> <span class="nav-text">Отчёт Lab 3</span></a></li>
+                <li><a href="index.html?logout=1" id="logout-link"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Выйти</span></a></li>
+                <li><a href="profile.html"><img src="profile.jpeg" class="profile-pic-micro" alt="Profile"> <span class="nav-text">Профиль</span></a></li>
+            </ul>
+        </nav>
+
+        <!-- Страница профиля -->
+        <main class="profile-main">
+            <div class="profile-container">
+                <!-- Шапка -->
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <img src="profile.jpeg" alt="dinmukhamad">
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-username-row">
+                            <h2>dinmukhamad</h2>
+                            <button class="profile-btn">Редактировать профиль</button>
+                            <button class="profile-btn">Архив</button>
+                        </div>
+                        <div class="profile-stats">
+                            <div><span>9</span> публикаций</div>
+                            <div><span>1,420</span> подписчиков</div>
+                            <div><span>380</span> подписок</div>
+                        </div>
+                        <div class="profile-bio">
+                            <h1>Dinmukhamad</h1>
+                            <p>🚀 Frontend Developer<br>💻 Создаю сайты на HTML & CSS<br>📍 Казахстан</p>
+                            <p class="login-info" id="login-info"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Сетка фотографий -->
+                <div class="profile-grid">
+                    <div class="grid-item"><img src="1.jpg" alt="Post"></div>
+                    <div class="grid-item"><img src="2.jpg" alt="Post"></div>
+                    <div class="grid-item"><img src="3.jpg" alt="Post"></div>
+                    <div class="grid-item"><img src="4.jpg" alt="Post"></div>
+                    <div class="grid-item"><img src="profile.jpeg" alt="Post"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Выход: удаляем cookie авторизации и возвращаемся на страницу входа -->
+    <script>
+        // Данные о входе читаем из cookie.
+        document.getElementById('login-info').textContent =
+            `Вы вошли как ${Auth.currentUser()} · вход: ${Auth.lastVisit() ?? '—'}`;
+
+        document.getElementById('logout-link').addEventListener('click', (event) => {
+            event.preventDefault();
+            Auth.logout();
+            location.replace('index.html?logout=1');
+        });
+    </script>
+</body>
+</html>

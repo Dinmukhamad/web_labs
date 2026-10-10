@@ -66,7 +66,7 @@
         th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
         th { background: var(--code-bg); }
         .ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 16px; }
         figure { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
         figure img { width: 100%; display: block; border-bottom: 1px solid var(--border); }
         figcaption { font-size: 13px; padding: 8px 10px; color: var(--muted); }
@@ -79,239 +79,228 @@
     <header>
         <div class="brand">Web Labs</div>
         <h1>Лабораторная работа №3 — Login</h1>
-        <p class="meta">GET + POST + Cookie + Validation · Пятничная группа · Студент: Dinmukhamad Pakhriddinov</p>
+        <p class="meta">GET + POST + Cookie + Validation · HTML / CSS / JavaScript · Пятничная группа · Студент: Dinmukhamad Pakhriddinov</p>
         <div class="actions">
-            <a class="btn" href="login.php">Открыть страницу входа</a>
-            <a class="btn secondary" href="../index.html">← На главную сайта</a>
+            <a class="btn" href="../index.html">Открыть страницу входа</a>
+            <a class="btn secondary" href="../profile.html">Профиль Instagram</a>
         </div>
     </header>
 
     <section>
         <h2>1. Цель работы</h2>
-        <p>Создать на своём сайте страницу авторизации, которая:</p>
+        <p>Сделать вход на сайт: при открытии сайта пользователь видит форму входа, а после успешного входа переходит на страницу профиля в стиле Instagram. В работе нужно использовать:</p>
         <ul>
-            <li>принимает данные формы методом <b>POST</b> и использует <b>GET</b>-параметры для навигации и сообщений;</li>
-            <li>сохраняет состояние входа и «запомненный» логин в <b>cookie</b>;</li>
-            <li>проверяет введённые данные (<b>валидация</b>) на стороне клиента (JavaScript) и сервера (PHP).</li>
+            <li>форму с методом <b>POST</b> и параметры <b>GET</b> в адресной строке;</li>
+            <li><b>cookie</b> для хранения состояния входа и функции «Запомнить меня»;</li>
+            <li><b>валидацию</b> введённых данных.</li>
         </ul>
+        <p>Технологии: только <b>HTML</b>, <b>CSS</b> и <b>JavaScript</b>. Сайт размещён на GitHub Pages.</p>
     </section>
 
     <section>
-        <h2>2. Теория</h2>
+        <h2>2. Как работает сайт</h2>
+        <ol>
+            <li>Пользователь открывает сайт: загружается <code>index.html</code> со страницей входа.</li>
+            <li>Он вводит логин и пароль. JavaScript проверяет формат полей и сам пароль.</li>
+            <li>При успехе в браузер записываются cookie, и пользователь переходит на <code>profile.html</code> (страница Instagram).</li>
+            <li><code>profile.html</code> сначала проверяет cookie. Если её нет, пользователь возвращается на <code>index.html?error=auth</code>.</li>
+            <li>Кнопка «Выйти» удаляет cookie и открывает <code>index.html?logout=1</code>.</li>
+            <li>Если пользователь уже вошёл и снова открывает сайт, его сразу перенаправляет на профиль.</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>3. Теория</h2>
         <h3>GET и POST</h3>
         <div class="table-wrap">
         <table>
             <tr><th></th><th>GET</th><th>POST</th></tr>
-            <tr><td>Где передаются данные</td><td>В строке URL: <code>?tab=cookies</code></td><td>В теле HTTP-запроса</td></tr>
-            <tr><td>Видимость</td><td>Видны в адресной строке, истории, логах</td><td>Не видны в URL</td></tr>
-            <tr><td>Назначение</td><td>Получение данных, без изменения состояния</td><td>Отправка данных, изменение состояния (вход, выход)</td></tr>
-            <tr><td>В PHP</td><td><code>$_GET</code></td><td><code>$_POST</code></td></tr>
-            <tr><td>В лабораторной</td><td>Показ формы, <code>?logout=1</code>, <code>?error=auth</code>, <code>?username=</code>, вкладки <code>?tab=</code></td><td>Отправка логина и пароля, выход (<code>logout.php</code>)</td></tr>
+            <tr><td>Где передаются данные</td><td>В строке URL: <code>?logout=1</code></td><td>В теле HTTP-запроса</td></tr>
+            <tr><td>Видимость</td><td>Видны в адресной строке и истории</td><td>Не видны в URL</td></tr>
+            <tr><td>Назначение</td><td>Получение страницы, неконфиденциальные параметры</td><td>Отправка данных формы (логин, пароль)</td></tr>
+            <tr><td>Как читать в JS</td><td><code>new URLSearchParams(location.search)</code></td><td>Событие <code>submit</code> формы, <code>form.elements</code></td></tr>
+            <tr><td>В этой работе</td><td><code>?logout=1</code>, <code>?error=auth</code>, <code>?username=…</code></td><td>Форма входа <code>method="post"</code></td></tr>
         </table>
         </div>
-        <p>Пароль никогда не передаётся через GET, иначе он попадёт в историю браузера и логи сервера.</p>
+        <p>Форма входа объявлена с <code>method="post"</code>, потому что пароль нельзя передавать через GET: он попал бы в адресную строку и историю браузера. GitHub Pages отдаёт только статические файлы и не принимает POST-запросы, поэтому отправку формы перехватывает JavaScript (<code>event.preventDefault()</code>) и обрабатывает данные прямо в браузере.</p>
 
         <h3>Cookie</h3>
-        <p>Cookie — небольшие данные, которые сервер передаёт браузеру заголовком <code>Set-Cookie</code>, а браузер возвращает их в каждом следующем запросе заголовком <code>Cookie</code>. В PHP cookie устанавливаются функцией <code>setcookie()</code> и читаются из <code>$_COOKIE</code>.</p>
+        <p>Cookie — небольшие данные, которые браузер хранит для сайта и отправляет с каждым запросом. В JavaScript они записываются и читаются через <code>document.cookie</code>.</p>
         <div class="table-wrap">
         <table>
             <tr><th>Cookie</th><th>Значение</th><th>Срок</th><th>Зачем</th></tr>
-            <tr><td><code>auth_user</code></td><td><code>логин|HMAC-подпись</code></td><td>До закрытия браузера</td><td>Признак входа. Подпись не даёт подделать cookie вручную.</td></tr>
-            <tr><td><code>remember_login</code></td><td>логин</td><td>7 дней</td><td>Автозаполнение поля «Имя пользователя» (галочка «Запомнить меня»).</td></tr>
-            <tr><td><code>last_visit</code></td><td>дата и время входа</td><td>7 дней</td><td>Показывается на странице после входа.</td></tr>
+            <tr><td><code>ig_user</code></td><td>логин</td><td>До закрытия браузера, или 7 дней с «Запомнить меня»</td><td>Признак входа. Без неё <code>profile.html</code> не открывается.</td></tr>
+            <tr><td><code>ig_remember</code></td><td>логин</td><td>7 дней</td><td>Подставляет логин в форму после выхода.</td></tr>
+            <tr><td><code>ig_last_visit</code></td><td>дата и время входа</td><td>7 дней</td><td>Показывается в профиле: «Вы вошли как … · вход: …».</td></tr>
         </table>
         </div>
-        <p>Все cookie ставятся с флагами <code>HttpOnly</code> (недоступны из JavaScript) и <code>SameSite=Lax</code> (защита от CSRF).</p>
+        <p>Атрибуты cookie: <code>path</code> — папка сайта (<code>/web_labs/</code>), <code>max-age</code> — срок жизни в секундах, <code>SameSite=Lax</code> — защита от отправки с чужих сайтов, <code>Secure</code> — только по HTTPS.</p>
 
         <h3>Валидация</h3>
-        <p><b>Клиентская</b> (JavaScript) — даёт мгновенную подсказку, но её легко обойти. <b>Серверная</b> (PHP) — обязательна, потому что именно она защищает приложение. В работе используются одинаковые правила на обеих сторонах:</p>
+        <p>Перед входом JavaScript проверяет поля и выводит ошибку под каждым неправильным полем:</p>
         <ul>
-            <li><b>Имя пользователя:</b> обязательно, 3–20 символов, только <code>a–z A–Z 0–9 _ .</code></li>
-            <li><b>Пароль:</b> обязателен, 6–32 символа, минимум одна буква и одна цифра.</li>
-            <li>После проверки формата — сравнение с хешем пароля через <code>password_verify()</code>.</li>
+            <li><b>Имя пользователя:</b> обязательно, от 3 до 20 символов, только <code>a–z A–Z 0–9 _ .</code></li>
+            <li><b>Пароль:</b> обязателен, от 6 до 32 символов, минимум одна буква и одна цифра.</li>
+            <li>Если формат верный, пароль хешируется (SHA-256) и сравнивается с сохранённым хешем. Открытым текстом пароль в коде не хранится.</li>
         </ul>
+        <div class="note">Ограничение статического сайта: весь код выполняется в браузере пользователя, поэтому такая защита учебная. В реальном проекте логин и пароль проверяет сервер, а cookie авторизации ставится с флагом <code>HttpOnly</code>, который из JavaScript установить нельзя.</div>
     </section>
 
     <section>
-        <h2>3. Структура файлов</h2>
+        <h2>4. Структура файлов</h2>
 <pre><code>web_labs/
-├── index.html          главная страница сайта (ссылка на Lab 3 в меню)
+├── index.html          страница входа (открывается первой)
+├── profile.html        страница Instagram (только после входа)
+├── style.css           стили профиля
 └── lab3/
-    ├── config.php      пользователь, функции cookie, валидация
-    ├── login.php       форма входа: GET — показ, POST — проверка
-    ├── welcome.php     защищённая страница (проверяет cookie), вкладки ?tab=
-    ├── logout.php      выход (только POST), удаляет auth-cookie
-    ├── login.js        клиентская валидация
-    ├── login.css       стили в стиле Instagram
+    ├── auth.js         cookie: вход, выход, проверка пользователя
+    ├── login.js        валидация формы и обработка отправки
+    ├── login.css       стили страницы входа
     ├── report.html     этот отчёт
     └── screenshots/    скриншоты</code></pre>
     </section>
 
     <section>
-        <h2>4. Реализация</h2>
+        <h2>5. Реализация</h2>
 
-        <h3>4.1 Обработка GET и POST (login.php)</h3>
-<pre><code>if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim((string)($_POST['username'] ?? ''));
-    $password = (string)($_POST['password'] ?? '');
-    $remember = isset($_POST['remember']);
+        <h3>5.1 Форма входа (index.html)</h3>
+<pre><code>&lt;form id="login-form" action="index.html" method="post"
+      data-success="profile.html" novalidate&gt;
+    &lt;input type="text" name="username" placeholder="Имя пользователя"&gt;
+    &lt;input type="password" name="password" placeholder="Пароль"&gt;
+    &lt;label&gt;&lt;input type="checkbox" name="remember"&gt; Запомнить меня&lt;/label&gt;
+    &lt;button type="submit"&gt;Войти&lt;/button&gt;
+&lt;/form&gt;</code></pre>
 
-    $errors = validate_login($username, $password);
+        <h3>5.2 GET-параметры (index.html)</h3>
+<pre><code>const params = new URLSearchParams(location.search);
 
-    if (!$errors) {
-        $hash = USERS[$username] ?? null;
-        if ($hash === null || !password_verify($password, $hash)) {
-            $errors['form'] = 'Неверное имя пользователя или пароль.';
-        }
-    }
-
-    if (!$errors) {
-        set_app_cookie(AUTH_COOKIE, sign_user($username));
-        set_app_cookie(VISIT_COOKIE, date('d.m.Y H:i:s'), time() + REMEMBER_TTL);
-        $remember
-            ? set_app_cookie(REMEMBER_COOKIE, $username, time() + REMEMBER_TTL)
-            : delete_app_cookie(REMEMBER_COOKIE);
-
-        redirect('welcome.php?tab=profile');   // Post/Redirect/Get
-    }
-} else {
-    // GET: автозаполнение логина из ?username= или из cookie
-    $username = trim((string)($_GET['username'] ?? ($_COOKIE[REMEMBER_COOKIE] ?? '')));
-    if (isset($_GET['logout']))              $notice = 'Вы вышли из аккаунта.';
-    elseif (($_GET['error'] ?? '') === 'auth') $notice = 'Сначала войдите в аккаунт.';
-}</code></pre>
-        <p>После успешного POST выполняется перенаправление (шаблон <b>Post/Redirect/Get</b>), поэтому обновление страницы не отправляет форму повторно.</p>
-
-        <h3>4.2 Установка cookie (config.php)</h3>
-<pre><code>function set_app_cookie(string $name, string $value, int $expires = 0): void
-{
-    setcookie($name, $value, [
-        'expires'  => $expires,
-        'path'     => '/',
-        'httponly' => true,
-        'samesite' => 'Lax',
-        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
-    ]);
+if (params.has('logout')) {
+    notice.textContent = 'Вы вышли из аккаунта.';
+} else if (params.get('error') === 'auth') {
+    notice.textContent = 'Сначала войдите в аккаунт.';
 }
 
-function sign_user(string $username): string
-{
-    return $username . '|' . hash_hmac('sha256', $username, COOKIE_SECRET);
-}
+// автозаполнение логина: из ?username= или из cookie
+const remembered = Auth.rememberedUser();
+username.value = params.get('username') ?? remembered ?? '';</code></pre>
 
-function current_user(): ?string
-{
-    $raw = $_COOKIE[AUTH_COOKIE] ?? '';
-    if (!is_string($raw) || !str_contains($raw, '|')) return null;
-    [$username, $signature] = explode('|', $raw, 2);
-    $expected = hash_hmac('sha256', $username, COOKIE_SECRET);
-    if (!hash_equals($expected, $signature) || !isset(USERS[$username])) return null;
-    return $username;
-}</code></pre>
-
-        <h3>4.3 Серверная валидация (config.php)</h3>
-<pre><code>function validate_login(string $username, string $password): array
-{
-    $errors = [];
-    if ($username === '') {
-        $errors['username'] = 'Введите имя пользователя.';
-    } elseif (mb_strlen($username) &lt; 3 || mb_strlen($username) &gt; 20) {
-        $errors['username'] = 'Имя пользователя должно быть от 3 до 20 символов.';
-    } elseif (!preg_match('/^[a-zA-Z0-9_.]+$/', $username)) {
-        $errors['username'] = 'Допустимы только латинские буквы, цифры, «_» и «.».';
-    }
-
-    if ($password === '') {
-        $errors['password'] = 'Введите пароль.';
-    } elseif (mb_strlen($password) &lt; 6 || mb_strlen($password) &gt; 32) {
-        $errors['password'] = 'Пароль должен быть от 6 до 32 символов.';
-    } elseif (!preg_match('/[A-Za-z]/', $password) || !preg_match('/\d/', $password)) {
-        $errors['password'] = 'Пароль должен содержать хотя бы одну букву и одну цифру.';
-    }
-    return $errors;
-}</code></pre>
-
-        <h3>4.4 Клиентская валидация (login.js)</h3>
-<pre><code>form.addEventListener('submit', (event) =&gt; {
+        <h3>5.3 Обработка отправки POST-формы (login.js)</h3>
+<pre><code>form.addEventListener('submit', async (event) =&gt; {
+    event.preventDefault();             // сервера нет — обрабатываем в браузере
     const okUser = validateField('username');
     const okPass = validateField('password');
-    if (!okUser || !okPass) {
-        event.preventDefault();   // форма не уходит на сервер
+    if (!okUser || !okPass) return;
+
+    const ok = await Auth.login(
+        form.elements.username.value.trim(),
+        form.elements.password.value,
+        form.elements.remember.checked,
+    );
+    if (ok) {
+        location.href = form.dataset.success;   // → profile.html
+    } else {
+        showFormError('Неверное имя пользователя или пароль.');
     }
 });</code></pre>
 
-        <h3>4.5 Защищённая страница и GET-параметр (welcome.php)</h3>
-<pre><code>$user = current_user();
-if ($user === null) {
-    redirect('login.php?error=auth');
+        <h3>5.4 Валидация (login.js)</h3>
+<pre><code>const rules = {
+    username(value) {
+        if (value === '') return 'Введите имя пользователя.';
+        if (value.length &lt; 3 || value.length &gt; 20) return 'Имя пользователя должно быть от 3 до 20 символов.';
+        if (!/^[a-zA-Z0-9_.]+$/.test(value)) return 'Допустимы только латинские буквы, цифры, «_» и «.».';
+        return '';
+    },
+    password(value) {
+        if (value === '') return 'Введите пароль.';
+        if (value.length &lt; 6 || value.length &gt; 32) return 'Пароль должен быть от 6 до 32 символов.';
+        if (!/[A-Za-z]/.test(value) || !/\d/.test(value)) return 'Пароль должен содержать хотя бы одну букву и одну цифру.';
+        return '';
+    },
+};</code></pre>
+
+        <h3>5.5 Cookie (auth.js)</h3>
+<pre><code>function setCookie(name, value, maxAge) {
+    let cookie = `${name}=${encodeURIComponent(value)}; path=${PATH}; SameSite=Lax`;
+    if (maxAge !== undefined) cookie += `; max-age=${maxAge}`;
+    if (location.protocol === 'https:') cookie += '; Secure';
+    document.cookie = cookie;
 }
 
-// GET-параметр tab проверяется по белому списку
-$tabs = ['profile' =&gt; 'Профиль', 'cookies' =&gt; 'Cookies', 'request' =&gt; 'Запрос'];
-$tab  = (string)($_GET['tab'] ?? 'profile');
-if (!array_key_exists($tab, $tabs)) {
-    $tab = 'profile';
+async function login(username, password, remember) {
+    const hash = USERS[username];
+    if (!hash || (await sha256(password)) !== hash) return false;
+
+    setCookie(AUTH_COOKIE, username, remember ? REMEMBER_TTL : undefined);
+    setCookie(VISIT_COOKIE, new Date().toLocaleString('ru-RU'), REMEMBER_TTL);
+    remember ? setCookie(REMEMBER_COOKIE, username, REMEMBER_TTL)
+             : deleteCookie(REMEMBER_COOKIE);
+    return true;
+}
+
+function logout() {
+    deleteCookie(AUTH_COOKIE);   // max-age=0 — браузер удаляет cookie
 }</code></pre>
 
-        <h3>4.6 Безопасность</h3>
-        <ul>
-            <li>Пароль хранится только как хеш (<code>password_hash</code> / <code>password_verify</code>).</li>
-            <li>Весь вывод экранируется функцией <code>htmlspecialchars</code> (защита от XSS).</li>
-            <li>Auth-cookie подписана HMAC-SHA256, сравнение через <code>hash_equals</code>.</li>
-            <li>Выход выполняется только POST-запросом; GET на <code>logout.php</code> возвращает <code>405</code>.</li>
-            <li>При неверном логине или пароле выводится общее сообщение, чтобы нельзя было узнать, какие логины существуют.</li>
-        </ul>
+        <h3>5.6 Защита страницы профиля (profile.html)</h3>
+<pre><code>&lt;head&gt;
+    &lt;script src="lab3/auth.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        if (!Auth.currentUser()) {
+            location.replace('index.html?error=auth');
+        }
+    &lt;/script&gt;
+&lt;/head&gt;</code></pre>
+        <p>Проверка стоит в <code>&lt;head&gt;</code>, поэтому без входа страница не успевает показаться.</p>
     </section>
 
     <section>
-        <h2>5. Тестирование</h2>
+        <h2>6. Тестирование</h2>
+        <p>Сценарии проверены автоматически в браузере Chromium (Playwright).</p>
         <div class="table-wrap">
         <table>
             <tr><th>#</th><th>Действие</th><th>Ожидаемый результат</th><th>Итог</th></tr>
-            <tr><td>1</td><td>GET <code>login.php</code></td><td>Форма входа, код 200</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>2</td><td>GET <code>welcome.php</code> без cookie</td><td>302 → <code>login.php?error=auth</code></td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>3</td><td>POST с пустыми полями</td><td>«Введите имя пользователя.», «Введите пароль.»</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>4</td><td>POST <code>username=ab&lt;script</code>, <code>password=abc</code></td><td>Ошибки формата, значение экранировано</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>5</td><td>POST с неверным паролем</td><td>«Неверное имя пользователя или пароль.»</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>6</td><td>POST с верными данными + «Запомнить меня»</td><td>3 заголовка <code>Set-Cookie</code>, 302 → <code>welcome.php</code></td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>7</td><td>GET <code>welcome.php?tab=cookies</code></td><td>Таблица cookie</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>8</td><td>GET <code>welcome.php?tab=evil</code></td><td>Открывается вкладка «Профиль»</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>9</td><td>Поддельная cookie <code>auth_user=dinmukhamad|deadbeef</code></td><td>302 → <code>login.php?error=auth</code></td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>10</td><td>GET <code>logout.php</code></td><td>405 Method Not Allowed</td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>11</td><td>POST <code>logout.php</code></td><td>auth-cookie удалена, 302 → <code>login.php?logout=1</code></td><td class="ok">✓ Пройден</td></tr>
-            <tr><td>12</td><td>GET <code>login.php?logout=1</code> после выхода</td><td>«Вы вышли из аккаунта.», логин подставлен из cookie</td><td class="ok">✓ Пройден</td></tr>
+            <tr><td>1</td><td>Открыть сайт</td><td>Показывается форма входа</td><td class="ok">✓</td></tr>
+            <tr><td>2</td><td>Открыть <code>profile.html</code> без входа</td><td>Переход на <code>index.html?error=auth</code></td><td class="ok">✓</td></tr>
+            <tr><td>3</td><td>То же</td><td>Сообщение «Сначала войдите в аккаунт.»</td><td class="ok">✓</td></tr>
+            <tr><td>4</td><td>Отправить пустую форму</td><td>«Введите имя пользователя.», «Введите пароль.»</td><td class="ok">✓</td></tr>
+            <tr><td>5</td><td>Логин <code>bad name!</code>, пароль <code>abc</code></td><td>Ошибки формата у обоих полей</td><td class="ok">✓</td></tr>
+            <tr><td>6</td><td>Верный логин, пароль <code>wrong123</code></td><td>«Неверное имя пользователя или пароль.»</td><td class="ok">✓</td></tr>
+            <tr><td>7</td><td>То же</td><td>Остаёмся на странице входа</td><td class="ok">✓</td></tr>
+            <tr><td>8</td><td><code>dinmukhamad</code> / <code>Lab3pass</code> + «Запомнить меня»</td><td>Переход на <code>profile.html</code></td><td class="ok">✓</td></tr>
+            <tr><td>9</td><td>То же</td><td>Записаны cookie <code>ig_user</code>, <code>ig_remember</code>, <code>ig_last_visit</code></td><td class="ok">✓</td></tr>
+            <tr><td>10</td><td>То же</td><td>Путь cookie — папка сайта <code>/web_labs/</code></td><td class="ok">✓</td></tr>
+            <tr><td>11</td><td>Профиль после входа</td><td>Строка «Вы вошли как dinmukhamad · вход: …»</td><td class="ok">✓</td></tr>
+            <tr><td>12</td><td>Открыть сайт, уже войдя</td><td>Сразу открывается <code>profile.html</code></td><td class="ok">✓</td></tr>
+            <tr><td>13</td><td>Нажать «Выйти»</td><td>Переход на <code>index.html?logout=1</code></td><td class="ok">✓</td></tr>
+            <tr><td>14</td><td>После выхода</td><td>Логин подставлен из cookie, галочка стоит</td><td class="ok">✓</td></tr>
+            <tr><td>15</td><td>После выхода</td><td>Cookie <code>ig_user</code> удалена</td><td class="ok">✓</td></tr>
+            <tr><td>16</td><td>Открыть <code>index.html?username=test_user</code></td><td>Логин подставлен из GET-параметра</td><td class="ok">✓</td></tr>
+            <tr><td>17</td><td>Вручную записать cookie <code>ig_user=hacker</code></td><td>Профиль не открывается, переход на вход</td><td class="ok">✓</td></tr>
+            <tr><td>18</td><td>Вход без «Запомнить меня»</td><td>Cookie сессионная, <code>ig_remember</code> нет</td><td class="ok">✓</td></tr>
+            <tr><td>19</td><td>Профиль на ширине 375px</td><td>Нет горизонтальной прокрутки</td><td class="ok">✓</td></tr>
+            <tr><td>20</td><td>Вход на ширине 375px</td><td>Нет горизонтальной прокрутки</td><td class="ok">✓</td></tr>
         </table>
         </div>
     </section>
 
     <section>
-        <h2>6. Скриншоты</h2>
+        <h2>7. Скриншоты</h2>
         <div class="gallery">
-            <figure><img src="screenshots/01-login-get.png" alt="Форма входа" loading="lazy"><figcaption>1. Форма входа (GET)</figcaption></figure>
-            <figure><img src="screenshots/02-client-validation.png" alt="Клиентская валидация" loading="lazy"><figcaption>2. Клиентская валидация (JS)</figcaption></figure>
-            <figure><img src="screenshots/03-server-validation.png" alt="Серверная валидация" loading="lazy"><figcaption>3. Серверная валидация (PHP, JS обойдён)</figcaption></figure>
-            <figure><img src="screenshots/04-wrong-password.png" alt="Неверный пароль" loading="lazy"><figcaption>4. Неверный пароль (POST)</figcaption></figure>
-            <figure><img src="screenshots/05-welcome.png" alt="Успешный вход" loading="lazy"><figcaption>5. Успешный вход</figcaption></figure>
-            <figure><img src="screenshots/06-cookies.png" alt="Cookie" loading="lazy"><figcaption>6. Установленные cookie</figcaption></figure>
-            <figure><img src="screenshots/07-get-params.png" alt="GET-параметры" loading="lazy"><figcaption>7. GET-параметр <code>?tab=request</code></figcaption></figure>
-            <figure><img src="screenshots/08-logout.png" alt="Выход" loading="lazy"><figcaption>8. Выход, логин запомнен в cookie</figcaption></figure>
-            <figure><img src="screenshots/09-protected-redirect.png" alt="Защищённая страница" loading="lazy"><figcaption>9. Доступ без cookie → перенаправление</figcaption></figure>
+            <figure><img src="screenshots/01-login.png" alt="Форма входа" loading="lazy"><figcaption>1. Страница входа — первая страница сайта</figcaption></figure>
+            <figure><img src="screenshots/02-validation.png" alt="Валидация" loading="lazy"><figcaption>2. Валидация полей</figcaption></figure>
+            <figure><img src="screenshots/03-wrong-password.png" alt="Неверный пароль" loading="lazy"><figcaption>3. Неверный пароль</figcaption></figure>
+            <figure><img src="screenshots/04-instagram-profile.png" alt="Профиль Instagram" loading="lazy"><figcaption>4. После входа — страница Instagram</figcaption></figure>
+            <figure><img src="screenshots/05-logout.png" alt="Выход" loading="lazy"><figcaption>5. Выход (<code>?logout=1</code>), логин из cookie</figcaption></figure>
+            <figure><img src="screenshots/06-protected-redirect.png" alt="Защищённая страница" loading="lazy"><figcaption>6. Профиль без входа → <code>?error=auth</code></figcaption></figure>
+            <figure><img src="screenshots/07-get-username.png" alt="GET-параметр" loading="lazy"><figcaption>7. GET-параметр <code>?username=test_user</code></figcaption></figure>
         </div>
     </section>
 
     <section>
-        <h2>7. Как запустить</h2>
-        <p>Страницы входа написаны на PHP, поэтому нужен сервер с PHP (≥ 8.0). Локально:</p>
-<pre><code>cd web_labs
-php -S localhost:8000
-# открыть http://localhost:8000/lab3/login.php
-# демо-аккаунт: dinmukhamad / Lab3pass</code></pre>
-        <div class="note">GitHub Pages отдаёт только статические файлы и не выполняет PHP, поэтому на GitHub Pages открывается этот отчёт, а сама форма входа работает на сервере с PHP (локально через <code>php -S</code> или на любом PHP-хостинге).</div>
-    </section>
-
-    <section>
         <h2>8. Вывод</h2>
-        <p>В ходе работы была создана страница авторизации для сайта. Разобрана разница между методами GET и POST: GET используется для получения страниц и передачи неконфиденциальных параметров (сообщения, вкладки), POST — для отправки логина и пароля и для выхода. Состояние входа хранится в подписанной cookie, а функция «Запомнить меня» реализована через cookie со сроком жизни 7 дней. Введённые данные проверяются дважды: в браузере (JavaScript) для удобства пользователя и на сервере (PHP) для безопасности. Все 12 тестовых сценариев пройдены.</p>
+        <p>В ходе работы на сайт добавлен вход: сайт открывается со страницы входа, а после успешной авторизации пользователь попадает на страницу профиля в стиле Instagram. Форма отправляется методом POST, и эту отправку обрабатывает JavaScript, потому что на GitHub Pages нет сервера. GET-параметры в адресной строке используются для сообщений (<code>?logout=1</code>, <code>?error=auth</code>) и автозаполнения логина (<code>?username=</code>). Состояние входа хранится в cookie, а «Запомнить меня» продлевает её до 7 дней и сохраняет логин для формы. Введённые данные проверяются по правилам, и под каждым неверным полем показывается ошибка. Все 20 тестовых сценариев пройдены.</p>
     </section>
 
     <footer>Web Labs · Лабораторная работа №3 · 2026</footer>
