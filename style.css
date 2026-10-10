@@ -182,6 +182,13 @@ a {
     color: var(--light-text) !important;
 }
 
+.empty-grid {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--light-text);
+    padding: 60px 0;
+}
+
 /* СЕТКА ФОТОГРАФИЙ */
 .profile-grid {
     display: grid;
@@ -281,6 +288,9 @@ a {
     }
     .nav-links li a {
         padding: 0;
+    }
+    .nav-extra {
+        display: none;
     }
     .profile-main {
         margin-left: 0;

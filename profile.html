@@ -7,10 +7,16 @@
     <link rel="stylesheet" href="style.css">
     <!-- Иконки FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Lab 3: страница доступна только после входа (проверка cookie) -->
-    <script src="lab3/auth.js"></script>
+    <!-- Lab 4: страница доступна только после входа (сессия в базе данных SQLite) -->
+    <style>.auth-pending body { visibility: hidden; }</style>
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+    <script src="lab4/validation.js"></script>
+    <script src="lab4/db.js"></script>
+    <script src="lab4/auth.js"></script>
     <script>
-        if (!Auth.currentUser()) {
+        // Пока сессия проверяется в базе, страница скрыта.
+        document.documentElement.classList.add('auth-pending');
+        if (!Auth.hasSession()) {
             location.replace('index.html?error=auth');
         }
     </script>
@@ -31,9 +37,11 @@
                 <li><a href="#"><i class="far fa-envelope"></i> <span class="nav-text">Сообщения</span></a></li>
                 <li><a href="#"><i class="far fa-heart"></i> <span class="nav-text">Уведомления</span></a></li>
                 <li><a href="#"><i class="far fa-plus-square"></i> <span class="nav-text">Создать</span></a></li>
-                <li><a href="lab3/report.html"><i class="far fa-file-alt"></i> <span class="nav-text">Отчёт Lab 3</span></a></li>
+                <li class="nav-extra"><a href="lab4/database.html"><i class="fas fa-database"></i> <span class="nav-text">База данных</span></a></li>
+                <li class="nav-extra"><a href="lab4/report.html"><i class="far fa-file-alt"></i> <span class="nav-text">Отчёт Lab 4</span></a></li>
+                <li class="nav-extra"><a href="lab3/report.html"><i class="far fa-file-alt"></i> <span class="nav-text">Отчёт Lab 3</span></a></li>
                 <li><a href="index.html?logout=1" id="logout-link"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Выйти</span></a></li>
-                <li><a href="profile.html"><img src="profile.jpeg" class="profile-pic-micro" alt="Profile"> <span class="nav-text">Профиль</span></a></li>
+                <li><a href="profile.html"><img src="profile.jpeg" class="profile-pic-micro" id="nav-avatar" alt="Profile"> <span class="nav-text">Профиль</span></a></li>
             </ul>
         </nav>
 
@@ -43,29 +51,29 @@
                 <!-- Шапка -->
                 <div class="profile-header">
                     <div class="profile-avatar">
-                        <img src="profile.jpeg" alt="dinmukhamad">
+                        <img src="profile.jpeg" alt="dinmukhamad" id="profile-avatar">
                     </div>
                     <div class="profile-info">
                         <div class="profile-username-row">
-                            <h2>dinmukhamad</h2>
+                            <h2 id="profile-username">dinmukhamad</h2>
                             <button class="profile-btn">Редактировать профиль</button>
                             <button class="profile-btn">Архив</button>
                         </div>
-                        <div class="profile-stats">
+                        <div class="profile-stats" id="profile-stats">
                             <div><span>9</span> публикаций</div>
                             <div><span>1,420</span> подписчиков</div>
                             <div><span>380</span> подписок</div>
                         </div>
                         <div class="profile-bio">
-                            <h1>Dinmukhamad</h1>
-                            <p>🚀 Frontend Developer<br>💻 Создаю сайты на HTML & CSS<br>📍 Казахстан</p>
+                            <h1 id="profile-name">Dinmukhamad</h1>
+                            <p id="profile-about">🚀 Frontend Developer<br>💻 Создаю сайты на HTML & CSS<br>📍 Казахстан</p>
                             <p class="login-info" id="login-info"></p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Сетка фотографий -->
-                <div class="profile-grid">
+                <div class="profile-grid" id="profile-grid">
                     <div class="grid-item"><img src="1.jpg" alt="Post"></div>
                     <div class="grid-item"><img src="2.jpg" alt="Post"></div>
                     <div class="grid-item"><img src="3.jpg" alt="Post"></div>
@@ -76,15 +84,53 @@
         </main>
     </div>
 
-    <!-- Выход: удаляем cookie авторизации и возвращаемся на страницу входа -->
     <script>
-        // Данные о входе читаем из cookie.
-        document.getElementById('login-info').textContent =
-            `Вы вошли как ${Auth.currentUser()} · вход: ${Auth.lastVisit() ?? '—'}`;
+        // Фото и описание на странице принадлежат владельцу сайта.
+        const OWNER = 'dinmukhamad';
 
-        document.getElementById('logout-link').addEventListener('click', (event) => {
+        // Аватар с первой буквой имени для новых пользователей.
+        function letterAvatar(letter) {
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                <defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+                    <stop offset="0" stop-color="#feda75"/><stop offset=".5" stop-color="#d62976"/><stop offset="1" stop-color="#4f5bd5"/>
+                </linearGradient></defs>
+                <rect width="100" height="100" fill="url(#g)"/>
+                <text x="50" y="50" dy=".35em" text-anchor="middle" font-family="Arial" font-size="48" fill="#fff">${letter}</text>
+            </svg>`;
+            return 'data:image/svg+xml,' + encodeURIComponent(svg);
+        }
+
+        (async () => {
+            // Пользователь текущей сессии — из базы данных.
+            const user = await Auth.currentUser();
+            if (!user) {
+                location.replace('index.html?error=auth');
+                return;
+            }
+
+            document.title = `${user.username} • Профиль Instagram`;
+            document.getElementById('profile-username').textContent = user.username;
+            document.getElementById('profile-name').textContent = user.full_name;
+            document.getElementById('login-info').textContent =
+                `${user.email} · зарегистрирован: ${Auth.formatDate(user.created_at)} · вход: ${Auth.formatDate(user.last_login)}`;
+
+            if (user.username.toLowerCase() !== OWNER) {
+                const avatar = letterAvatar(user.username[0].toUpperCase());
+                document.getElementById('profile-avatar').src = avatar;
+                document.getElementById('nav-avatar').src = avatar;
+                document.getElementById('profile-about').textContent = 'Новый пользователь Instagram';
+                document.getElementById('profile-stats').querySelectorAll('span').forEach((span) => { span.textContent = '0'; });
+                const grid = document.getElementById('profile-grid');
+                grid.innerHTML = '<p class="empty-grid">Публикаций пока нет</p>';
+            }
+
+            document.documentElement.classList.remove('auth-pending');
+        })();
+
+        // Выход: удаляем сессию из базы и cookie, возвращаемся на страницу входа.
+        document.getElementById('logout-link').addEventListener('click', async (event) => {
             event.preventDefault();
-            Auth.logout();
+            await Auth.logout();
             location.replace('index.html?logout=1');
         });
     </script>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация • Instagram</title>
+    <!-- Framework: Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="lab4/lab4.css">
+    <!-- Database: SQLite (sql.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+    <script src="lab4/validation.js"></script>
+    <script src="lab4/db.js"></script>
+    <script src="lab4/auth.js"></script>
+    <script src="lab4/forms.js"></script>
+</head>
+<body>
+    <main class="container min-vh-100 d-flex flex-column justify-content-center align-items-center py-4">
+        <div class="card auth-card-wide w-100 shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="brand-logo text-center mb-1">Instagram</h1>
+                <p class="text-center text-body-secondary small mb-4">Зарегистрируйтесь, чтобы смотреть фото друзей</p>
+
+                <div id="notice" class="alert" role="alert" hidden></div>
+
+                <form id="register-form" action="register.html" method="post" novalidate>
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="fullName" name="fullName"
+                               placeholder="Имя и фамилия" autocomplete="name" maxlength="50">
+                        <label for="fullName">Имя и фамилия</label>
+                    </div>
+                    <div class="invalid-feedback" data-for="fullName"></div>
+
+                    <div class="form-floating mt-3">
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="Имя пользователя" autocomplete="username" maxlength="20">
+                        <label for="username">Имя пользователя</label>
+                    </div>
+                    <div class="invalid-feedback" data-for="username"></div>
+
+                    <div class="form-floating mt-3">
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="Email" autocomplete="email" maxlength="100">
+                        <label for="email">Email</label>
+                    </div>
+                    <div class="invalid-feedback" data-for="email"></div>
+
+                    <div class="input-group mt-3">
+                        <div class="form-floating">
+                            <input type="password" class="form-control" id="password" name="password"
+                                   placeholder="Пароль" autocomplete="new-password" maxlength="64">
+                            <label for="password">Пароль</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary" data-toggle-password="password"
+                                aria-label="Показать пароль"><i class="bi bi-eye"></i></button>
+                    </div>
+                    <div class="invalid-feedback" data-for="password"></div>
+                    <ul id="password-checks" class="password-checks list-unstyled small mt-2 mb-0"></ul>
+
+                    <div class="form-floating mt-3">
+                        <input type="password" class="form-control" id="confirm" name="confirm"
+                               placeholder="Повторите пароль" autocomplete="new-password" maxlength="64">
+                        <label for="confirm">Повторите пароль</label>
+                    </div>
+                    <div class="invalid-feedback" data-for="confirm"></div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-semibold mt-4">
+                        <span class="spinner-border spinner-border-sm me-1 d-none" aria-hidden="true"></span>
+                        Зарегистрироваться
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card auth-card-wide w-100 shadow-sm mt-3">
+            <div class="card-body text-center small">
+                Есть аккаунт? <a href="index.html" class="fw-semibold text-decoration-none">Вход</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const form = document.getElementById('register-form');
+        const notice = document.getElementById('notice');
+        const FIELDS = ['fullName', 'username', 'email', 'password', 'confirm'];
+        const touched = new Set();
+
+        const formData = () => ({
+            fullName: form.elements.fullName.value.trim(),
+            username: form.elements.username.value.trim(),
+            email: form.elements.email.value.trim(),
+            password: form.elements.password.value,
+            confirm: form.elements.confirm.value,
+        });
+
+        // Список требований к паролю, обновляется при вводе.
+        function renderPasswordChecks() {
+            const list = document.getElementById('password-checks');
+            list.replaceChildren(...Validation.passwordChecks(form.elements.password.value).map((check) => {
+                const item = document.createElement('li');
+                item.className = check.ok ? 'ok' : '';
+                item.innerHTML = `<i class="bi ${check.ok ? 'bi-check-circle-fill' : 'bi-circle'}"></i>`;
+                item.append(check.text);
+                return item;
+            }));
+        }
+
+        // Проверка в базе: свободны ли имя пользователя и email.
+        async function checkTaken(name) {
+            const value = form.elements[name].value.trim();
+            if (Validation.field(name, value) !== '') return;
+            await Db.open();
+            const column = name === 'username' ? 'username' : 'email';
+            const [row] = Db.query(`SELECT 1 AS taken FROM users WHERE ${column} = ?`, [value]);
+            if (row && form.elements[name].value.trim() === value) {
+                Forms.setError(form, name, name === 'username' ? 'Это имя пользователя уже занято.' : 'Этот email уже зарегистрирован.');
+            }
+        }
+
+        function validateField(name) {
+            const data = formData();
+            Forms.setError(form, name, Validation.field(name, data[name], data));
+        }
+
+        FIELDS.forEach((name) => {
+            const input = form.elements[name];
+            input.addEventListener('blur', () => {
+                touched.add(name);
+                validateField(name);
+                if (name === 'username' || name === 'email') checkTaken(name);
+            });
+            input.addEventListener('input', () => {
+                if (name === 'password') renderPasswordChecks();
+                if (touched.has(name)) validateField(name);
+                if (name === 'password' && touched.has('confirm')) validateField('confirm');
+            });
+        });
+
+        renderPasswordChecks();
+        Forms.bindPasswordToggles();
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // сервера нет — форму обрабатывает JavaScript
+            FIELDS.forEach((name) => touched.add(name));
+            const data = formData();
+            const errors = Validation.register(data);
+            Forms.showErrors(form, errors, FIELDS);
+            if (Object.keys(errors).length) return;
+
+            const button = form.querySelector('button[type=submit]');
+            Forms.busy(button, true);
+            try {
+                const result = await Auth.register(data);
+                if (result.ok) {
+                    // GET-параметры: сообщение об успехе и логин для автозаполнения.
+                    location.href = 'index.html?registered=1&login=' + encodeURIComponent(data.username);
+                    return;
+                }
+                Forms.showErrors(form, result.errors, FIELDS);
+                Forms.alert(notice, 'danger', result.errors.form ?? 'Исправьте ошибки в форме.');
+            } catch (error) {
+                Forms.alert(notice, 'danger', 'Не удалось открыть базу данных: ' + error.message);
+            } finally {
+                Forms.busy(button, false);
+            }
+        });
+    </script>
+</body>
+</html>

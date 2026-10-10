@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчёт Lab 4 • Database</title>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --card: #ffffff;
+            --text: #262626;
+            --muted: #8e8e8e;
+            --border: #dbdbdb;
+            --blue: #0095f6;
+            --code-bg: #f4f4f5;
+            --ok: #1a7f37;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #000000;
+                --card: #121212;
+                --text: #f5f5f5;
+                --muted: #a8a8a8;
+                --border: #363636;
+                --blue: #4cb5f9;
+                --code-bg: #1e1e1e;
+                --ok: #3fb950;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+        }
+        a { color: var(--blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+        header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 28px; }
+        .brand { font-family: cursive; font-size: 28px; font-weight: bold; }
+        h1 { font-size: 26px; margin: 8px 0 4px; }
+        .meta { color: var(--muted); font-size: 14px; }
+        .actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn {
+            display: inline-block; padding: 7px 16px; border-radius: 8px; font-weight: 600; font-size: 14px;
+            background: var(--blue); color: #fff;
+        }
+        .btn.secondary { background: var(--code-bg); color: var(--text); border: 1px solid var(--border); }
+        .btn:hover { text-decoration: none; opacity: .9; }
+        section { margin-bottom: 36px; }
+        h2 { font-size: 20px; margin-bottom: 12px; padding-top: 8px; }
+        h3 { font-size: 16px; margin: 18px 0 8px; }
+        p, li { font-size: 15px; }
+        p + p { margin-top: 8px; }
+        ul, ol { padding-left: 22px; }
+        li { margin: 4px 0; }
+        code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+        pre {
+            background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+            padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.5; margin: 10px 0;
+        }
+        pre code { background: none; padding: 0; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+        th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+        th { background: var(--code-bg); }
+        .ok { color: var(--ok); font-weight: 600; white-space: nowrap; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 16px; }
+        figure { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        figure img { width: 100%; display: block; border-bottom: 1px solid var(--border); }
+        figcaption { font-size: 13px; padding: 8px 10px; color: var(--muted); }
+        .note { border-left: 3px solid var(--blue); background: var(--card); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+        footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 16px; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="brand">Web Labs</div>
+        <h1>Лабораторная работа №4 — Database + Login + Registration</h1>
+        <p class="meta">Bootstrap 5 · SQLite (sql.js) · HTML / CSS / JavaScript · Пятничная группа · Студент: Dinmukhamad Pakhriddinov</p>
+        <div class="actions">
+            <a class="btn" href="../index.html">Вход</a>
+            <a class="btn secondary" href="../register.html">Регистрация</a>
+            <a class="btn secondary" href="database.html">База данных</a>
+            <a class="btn secondary" href="../lab3/report.html">Отчёт Lab 3</a>
+        </div>
+    </header>
+
+    <section>
+        <h2>1. Цель работы</h2>
+        <p>Доработать вход из Lab 3: добавить регистрацию, хранить пользователей в базе данных и оформить страницы с помощью CSS-фреймворка.</p>
+        <ul>
+            <li><b>Database</b> — пользователи и сессии хранятся в SQL-базе данных SQLite;</li>
+            <li><b>Registration</b> — форма регистрации с проверкой полей и уникальности логина и email;</li>
+            <li><b>Login</b> — вход по имени пользователя или email, сессия в cookie, выход;</li>
+            <li><b>Framework</b> — интерфейс на <b>Bootstrap 5</b>;</li>
+            <li>сайт остаётся на <b>GitHub Pages</b> — без серверного кода.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>2. Выбор технологий</h2>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Задача</th><th>Решение</th><th>Почему</th></tr>
+            <tr><td>Framework</td><td>Bootstrap 5.3.3 + Bootstrap Icons 1.11.3 (через CDN jsDelivr)</td><td>Готовая сетка, формы, карточки, таблицы, модальные окна и стили валидации (<code>is-invalid</code>, <code>invalid-feedback</code>).</td></tr>
+            <tr><td>Database</td><td>SQLite через sql.js 1.13.0</td><td>Настоящая SQL-база (CREATE TABLE, INSERT, SELECT, JOIN, UNIQUE, CHECK), скомпилированная в WebAssembly. Работает в браузере, поэтому подходит для GitHub Pages.</td></tr>
+            <tr><td>Хранение файла базы</td><td>IndexedDB</td><td>Встроенное хранилище браузера: файл базы сохраняется после каждого изменения и не теряется при перезагрузке.</td></tr>
+            <tr><td>Пароли</td><td>PBKDF2-SHA256, 100 000 итераций, уникальная соль (Web Crypto API)</td><td>Пароль нельзя восстановить из хеша, одинаковые пароли дают разные хеши.</td></tr>
+            <tr><td>Сессии</td><td>Таблица <code>sessions</code> + cookie <code>lab4_session</code></td><td>В cookie лежит только случайный токен; кто вошёл, определяется по базе.</td></tr>
+        </table>
+        </div>
+        <div class="note">GitHub Pages отдаёт только статические файлы, поэтому серверная база данных (MySQL, PostgreSQL) там невозможна. База SQLite работает прямо в браузере и хранится у каждого посетителя своя: пользователь, зарегистрированный на одном компьютере, не появится на другом. Демо-аккаунт <b>dinmukhamad</b> / <b>Lab3pass</b> создаётся автоматически в каждом браузере.</div>
+    </section>
+
+    <section>
+        <h2>3. Как работает сайт</h2>
+        <ol>
+            <li>Сайт открывается со страницы входа <code>index.html</code>. При первом открытии создаётся база данных с таблицами и демо-пользователем.</li>
+            <li>Новый пользователь нажимает «Зарегистрироваться» (<code>register.html</code>), заполняет форму, данные проверяются и записываются в таблицу <code>users</code>.</li>
+            <li>После регистрации открывается <code>index.html?registered=1&amp;login=…</code>: сообщение «Аккаунт создан», логин уже подставлен.</li>
+            <li>При входе пароль сверяется с хешем из базы, создаётся запись в <code>sessions</code>, а токен сохраняется в cookie.</li>
+            <li>Открывается страница Instagram <code>profile.html</code> с данными пользователя из базы. Без действующей сессии она перенаправляет на <code>index.html?error=auth</code>.</li>
+            <li>Страница <code>lab4/database.html</code> показывает содержимое таблиц и содержит SQL-консоль.</li>
+            <li>«Выйти» удаляет сессию из базы и cookie и открывает <code>index.html?logout=1</code>.</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>4. База данных</h2>
+        <h3>4.1 Схема</h3>
+<pre><code>CREATE TABLE users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name     TEXT    NOT NULL CHECK (length(full_name) BETWEEN 2 AND 50),
+    username      TEXT    NOT NULL UNIQUE COLLATE NOCASE
+                          CHECK (length(username) BETWEEN 3 AND 20),
+    email         TEXT    NOT NULL UNIQUE COLLATE NOCASE CHECK (email LIKE '%_@_%._%'),
+    password_hash TEXT    NOT NULL,
+    salt          TEXT    NOT NULL,
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    last_login    TEXT
+);
+
+CREATE TABLE sessions (
+    token      TEXT    PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    expires_at TEXT    NOT NULL
+);</code></pre>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Связь</th><th>Описание</th></tr>
+            <tr><td><code>users 1 — N sessions</code></td><td>У пользователя может быть несколько сессий (разные браузеры или вкладки). При удалении пользователя его сессии удаляются (<code>ON DELETE CASCADE</code>).</td></tr>
+        </table>
+        </div>
+        <p><code>COLLATE NOCASE</code> делает логин и email нечувствительными к регистру: <code>Dinmukhamad</code> и <code>dinmukhamad</code> считаются одним логином.</p>
+
+        <h3>4.2 Открытие и сохранение базы (db.js)</h3>
+<pre><code>async function load() {
+    const SQL = await initSqlJs({ locateFile: (file) =&gt; SQL_JS_CDN + file });
+    const bytes = await readFile();             // файл базы из IndexedDB
+    if (bytes) {
+        db = new SQL.Database(bytes);
+    } else {
+        await create(SQL);                      // CREATE TABLE + демо-пользователь
+    }
+    db.exec('PRAGMA foreign_keys = ON');
+    return db;
+}
+
+async function save() {
+    await writeFile(db.export());               // файл базы → IndexedDB
+}</code></pre>
+
+        <h3>4.3 Запросы только с параметрами</h3>
+<pre><code>function query(sql, params = []) {
+    const stmt = db.prepare(sql);
+    try {
+        stmt.bind(params);                      // значения подставляет SQLite
+        const rows = [];
+        while (stmt.step()) rows.push(stmt.getAsObject());
+        return rows;
+    } finally {
+        stmt.free();
+    }
+}
+
+Db.query('SELECT id, password_hash, salt FROM users WHERE username = ? OR email = ?', [login, login]);</code></pre>
+        <p>Данные пользователя никогда не склеиваются со строкой SQL, поэтому SQL-инъекция вида <code>' OR 1=1 --</code> не работает (тест 15).</p>
+    </section>
+
+    <section>
+        <h2>5. Регистрация</h2>
+<pre><code>async function register(data) {
+    const errors = Validation.register(clean);          // 1) правила полей
+    if (Object.keys(errors).length) return { ok: false, errors };
+
+    await Db.open();
+    const taken = Db.query('SELECT username, email FROM users WHERE username = ? OR email = ?',
+                           [clean.username, clean.email]);   // 2) уникальность
+    ...
+    const salt = randomHex(16);
+    Db.run(`INSERT INTO users (full_name, username, email, password_hash, salt)
+            VALUES (?, ?, ?, ?, ?)`,
+           [clean.fullName, clean.username, clean.email, await hashPassword(clean.password, salt), salt]);
+    await Db.save();                                     // 3) UNIQUE / CHECK в самой базе
+    return { ok: true, errors: {} };
+}</code></pre>
+        <p>Пароль хешируется функцией PBKDF2 (100 000 итераций SHA-256) с уникальной случайной солью:</p>
+<pre><code>async function hashPassword(password, saltHex) {
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits(
+        { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: 100000 }, key, 256);
+    return toHex(bits);
+}</code></pre>
+    </section>
+
+    <section>
+        <h2>6. Вход, сессии и cookie</h2>
+<pre><code>async function login(loginValue, password, remember) {
+    const [user] = Db.query('SELECT id, password_hash, salt FROM users WHERE username = ? OR email = ?', [login, login]);
+    if (!user || (await hashPassword(password, user.salt)) !== user.password_hash) {
+        return { ok: false, errors: { form: 'Неверное имя пользователя, email или пароль.' } };
+    }
+    const token = randomHex(32);                                   // 256 бит случайности
+    Db.run("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, datetime('now', ?))",
+           [token, user.id, remember ? '+7 days' : '+1 day']);
+    Db.run("UPDATE users SET last_login = datetime('now') WHERE id = ?", [user.id]);
+    await Db.save();
+    setCookie('lab4_session', token, remember ? 7 * 24 * 60 * 60 : undefined);
+    return { ok: true, errors: {} };
+}
+
+async function currentUser() {                 // кто вошёл — по токену из cookie
+    const [user] = Db.query(
+        `SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
+         WHERE s.token = ? AND s.expires_at &gt; datetime('now')`, [getCookie('lab4_session')]);
+    return user ?? null;
+}</code></pre>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Cookie</th><th>Значение</th><th>Срок</th><th>Атрибуты</th></tr>
+            <tr><td><code>lab4_session</code></td><td>случайный токен (64 hex-символа)</td><td>до закрытия браузера, или 7 дней с «Запомнить меня»</td><td><code>path=/web_labs/</code>, <code>SameSite=Lax</code>, <code>Secure</code> (на HTTPS)</td></tr>
+        </table>
+        </div>
+        <p>Поддельный токен не найдётся в таблице <code>sessions</code>, поэтому доступа не даст (тест 31). Сообщение об ошибке входа общее: по нему нельзя понять, существует ли такой логин.</p>
+
+        <h3>GET и POST</h3>
+        <p>Формы входа и регистрации объявлены с <code>method="post"</code>. Отправку обрабатывает JavaScript (<code>event.preventDefault()</code>), так как на GitHub Pages нет сервера. GET-параметры в адресе: <code>?registered=1</code>, <code>?login=…</code>, <code>?logout=1</code>, <code>?error=auth</code>.</p>
+    </section>
+
+    <section>
+        <h2>7. Валидация — три уровня</h2>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Уровень</th><th>Где</th><th>Что проверяет</th></tr>
+            <tr><td>1. Форма</td><td><code>register.html</code>, <code>index.html</code> + <code>validation.js</code></td><td>Формат полей сразу при вводе; занятость логина и email — запросом к базе при уходе с поля.</td></tr>
+            <tr><td>2. Логика</td><td><code>auth.js</code></td><td>Повторная проверка тех же правил и уникальности перед записью — даже если форму обойти.</td></tr>
+            <tr><td>3. База данных</td><td>Схема SQLite</td><td><code>NOT NULL</code>, <code>UNIQUE</code>, <code>CHECK</code> — база не примет некорректную запись (тест 28).</td></tr>
+        </table>
+        </div>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Поле</th><th>Правило</th></tr>
+            <tr><td>Имя и фамилия</td><td>2–50 символов, только буквы (в том числе кириллица), пробел, <code>-</code>, <code>'</code></td></tr>
+            <tr><td>Имя пользователя</td><td>3–20 символов, <code>a–z A–Z 0–9 _ .</code>, уникально без учёта регистра</td></tr>
+            <tr><td>Email</td><td>формат <code>name@domain.zone</code>, до 100 символов, уникален</td></tr>
+            <tr><td>Пароль</td><td>8–64 символа, строчная и заглавная латинская буква, цифра (список требований обновляется при вводе)</td></tr>
+            <tr><td>Повтор пароля</td><td>совпадает с паролем</td></tr>
+        </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>8. Bootstrap</h2>
+        <p>Подключение через CDN:</p>
+<pre><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"&gt;
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;</code></pre>
+        <div class="table-wrap">
+        <table>
+            <tr><th>Компонент Bootstrap</th><th>Где используется</th></tr>
+            <tr><td>Сетка и утилиты (<code>container</code>, <code>row</code>, <code>col-*</code>, <code>d-flex</code>, <code>min-vh-100</code>)</td><td>Раскладка всех страниц, адаптивность</td></tr>
+            <tr><td>Card</td><td>Формы входа и регистрации, карточки на странице базы</td></tr>
+            <tr><td>Forms: <code>form-floating</code>, <code>input-group</code>, <code>form-check</code></td><td>Поля с «плавающими» подписями, кнопка показа пароля, «Запомнить меня»</td></tr>
+            <tr><td>Validation: <code>is-invalid</code>, <code>is-valid</code>, <code>invalid-feedback</code></td><td>Подсветка полей и текст ошибок</td></tr>
+            <tr><td>Alerts</td><td>Сообщения: аккаунт создан, вы вышли, неверный пароль</td></tr>
+            <tr><td>Buttons + Spinner</td><td>Кнопки форм, индикатор загрузки во время запроса к базе</td></tr>
+            <tr><td>Navbar</td><td>Верхнее меню страницы базы данных</td></tr>
+            <tr><td>Table (<code>table-hover</code>, <code>table-responsive</code>)</td><td>Таблицы <code>users</code>, <code>sessions</code>, результат SQL-консоли</td></tr>
+            <tr><td>Modal (JavaScript Bootstrap)</td><td>Подтверждение сброса базы</td></tr>
+            <tr><td>Bootstrap Icons</td><td>Иконки: глаз, база, выход, загрузка</td></tr>
+        </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>9. Структура файлов</h2>
+<pre><code>web_labs/
+├── index.html            вход (Bootstrap)
+├── register.html         регистрация (Bootstrap)
+├── profile.html          страница Instagram — только после входа
+├── style.css             стили профиля
+├── lab3/                 Lab 3 (отчёт)
+└── lab4/
+    ├── db.js             SQLite: схема, открытие, сохранение в IndexedDB, запросы
+    ├── auth.js           регистрация, вход, выход, сессии, cookie, хеш пароля
+    ├── validation.js     правила валидации
+    ├── forms.js          вывод ошибок в формах Bootstrap
+    ├── lab4.css          дополнения к Bootstrap
+    ├── database.html     просмотр таблиц, SQL-консоль, скачивание .sqlite
+    ├── report.html       этот отчёт
+    └── screenshots/</code></pre>
+    </section>
+
+    <section>
+        <h2>10. Тестирование</h2>
+        <p>Все сценарии проверены автоматически в браузере Chromium (Playwright).</p>
+        <div class="table-wrap">
+        <table>
+            <tr><th>#</th><th>Сценарий</th><th>Итог</th></tr>
+            <tr><td>1</td><td>Сайт открывается со страницы входа</td><td class="ok">✓</td></tr>
+            <tr><td>2</td><td>Bootstrap подключён (стили кнопок)</td><td class="ok">✓</td></tr>
+            <tr><td>3</td><td><code>profile.html</code> без сессии → вход с предупреждением</td><td class="ok">✓</td></tr>
+            <tr><td>4</td><td>Регистрация: пустая форма — 5 ошибок</td><td class="ok">✓</td></tr>
+            <tr><td>5</td><td>Регистрация: неверные форматы всех полей, пароли не совпадают</td><td class="ok">✓</td></tr>
+            <tr><td>6</td><td>Список требований к паролю: <code>abc</code> — выполнено 1 из 4</td><td class="ok">✓</td></tr>
+            <tr><td>7</td><td>Занятый логин <code>dinmukhamad</code> показывается при уходе с поля</td><td class="ok">✓</td></tr>
+            <tr><td>8</td><td>Занятый email в другом регистре</td><td class="ok">✓</td></tr>
+            <tr><td>9</td><td>Пароль <code>Secret123</code> — выполнено 4 из 4</td><td class="ok">✓</td></tr>
+            <tr><td>10</td><td>После регистрации → <code>index.html?registered=1&amp;login=test_user</code></td><td class="ok">✓</td></tr>
+            <tr><td>11</td><td>Сообщение «Аккаунт создан», логин подставлен</td><td class="ok">✓</td></tr>
+            <tr><td>12</td><td>Пользователь записан в таблицу <code>users</code></td><td class="ok">✓</td></tr>
+            <tr><td>13</td><td>Пароль хранится как хеш (64 символа) с солью, не открытым текстом</td><td class="ok">✓</td></tr>
+            <tr><td>14</td><td>Неверный пароль — сообщение об ошибке</td><td class="ok">✓</td></tr>
+            <tr><td>15</td><td>SQL-инъекция <code>' OR 1=1 --</code> в логине не проходит</td><td class="ok">✓</td></tr>
+            <tr><td>16</td><td>Вход по email (в другом регистре) → <code>profile.html</code></td><td class="ok">✓</td></tr>
+            <tr><td>17</td><td>Профиль показывает логин, имя и email из базы</td><td class="ok">✓</td></tr>
+            <tr><td>18</td><td>Новый пользователь: аватар с буквой, «Публикаций пока нет»</td><td class="ok">✓</td></tr>
+            <tr><td>19</td><td>Cookie <code>lab4_session</code>: сессионная, <code>path=/web_labs/</code>, токен 64 символа</td><td class="ok">✓</td></tr>
+            <tr><td>20</td><td>Сессия записана в таблицу <code>sessions</code></td><td class="ok">✓</td></tr>
+            <tr><td>21</td><td>После перезагрузки страницы данные и сессия сохраняются</td><td class="ok">✓</td></tr>
+            <tr><td>22</td><td>Уже вошёл: <code>index.html</code> → <code>profile.html</code></td><td class="ok">✓</td></tr>
+            <tr><td>23</td><td>Страница базы: 2 пользователя, 1 активная сессия</td><td class="ok">✓</td></tr>
+            <tr><td>24</td><td>SQL-консоль: <code>SELECT COUNT(*)</code> возвращает 2</td><td class="ok">✓</td></tr>
+            <tr><td>25</td><td>SQL-консоль: ошибка в запросе показывается</td><td class="ok">✓</td></tr>
+            <tr><td>26</td><td>Скачанный файл — настоящая база SQLite (заголовок «SQLite format 3»)</td><td class="ok">✓</td></tr>
+            <tr><td>27</td><td>Повторная регистрация <code>Test_User</code> в обход формы отклонена</td><td class="ok">✓</td></tr>
+            <tr><td>28</td><td>Прямой INSERT с логином <code>ab</code> отклонён ограничением CHECK</td><td class="ok">✓</td></tr>
+            <tr><td>29</td><td>Выход → <code>index.html?logout=1</code></td><td class="ok">✓</td></tr>
+            <tr><td>30</td><td>После выхода сессия удалена из базы и cookie</td><td class="ok">✓</td></tr>
+            <tr><td>31</td><td>Поддельный токен в cookie → вход, cookie удалена</td><td class="ok">✓</td></tr>
+            <tr><td>32</td><td>«Запомнить меня» — cookie на 7 дней</td><td class="ok">✓</td></tr>
+            <tr><td>33</td><td>Владелец сайта видит свои фото</td><td class="ok">✓</td></tr>
+            <tr><td>34–36</td><td>Профиль, база данных, регистрация на ширине 375px — без горизонтальной прокрутки</td><td class="ok">✓</td></tr>
+            <tr><td>37</td><td>Сброс базы — остаётся только демо-пользователь</td><td class="ok">✓</td></tr>
+        </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>11. Скриншоты</h2>
+        <div class="gallery">
+            <figure><img src="screenshots/01-login.png" alt="Вход" loading="lazy"><figcaption>1. Страница входа (Bootstrap)</figcaption></figure>
+            <figure><img src="screenshots/02-register-validation.png" alt="Ошибки регистрации" loading="lazy"><figcaption>2. Регистрация: ошибки валидации, логин занят</figcaption></figure>
+            <figure><img src="screenshots/03-register-valid.png" alt="Регистрация заполнена" loading="lazy"><figcaption>3. Регистрация: все поля верны</figcaption></figure>
+            <figure><img src="screenshots/04-registered.png" alt="Аккаунт создан" loading="lazy"><figcaption>4. Аккаунт создан (<code>?registered=1&amp;login=…</code>)</figcaption></figure>
+            <figure><img src="screenshots/05-wrong-password.png" alt="Неверный пароль" loading="lazy"><figcaption>5. Неверный пароль</figcaption></figure>
+            <figure><img src="screenshots/06-profile-new-user.png" alt="Профиль нового пользователя" loading="lazy"><figcaption>6. Профиль нового пользователя — данные из базы</figcaption></figure>
+            <figure><img src="screenshots/07-database.png" alt="База данных" loading="lazy"><figcaption>7. Таблицы <code>users</code>, <code>sessions</code> и SQL-консоль</figcaption></figure>
+            <figure><img src="screenshots/08-profile-owner.png" alt="Профиль владельца" loading="lazy"><figcaption>8. Профиль владельца сайта</figcaption></figure>
+            <figure><img src="screenshots/09-logout.png" alt="Выход" loading="lazy"><figcaption>9. Выход (<code>?logout=1</code>)</figcaption></figure>
+            <figure><img src="screenshots/10-protected.png" alt="Без входа" loading="lazy"><figcaption>10. Профиль без входа → <code>?error=auth</code></figcaption></figure>
+        </div>
+    </section>
+
+    <section>
+        <h2>12. Вывод</h2>
+        <p>В ходе работы на сайт добавлены регистрация и вход с хранением данных в базе SQLite. База создаётся и работает прямо в браузере (sql.js, WebAssembly) и сохраняется в IndexedDB, поэтому сайт продолжает работать на GitHub Pages без сервера. Таблица <code>users</code> хранит пользователей с хешем пароля (PBKDF2 с солью), таблица <code>sessions</code> — активные сессии; в cookie записывается только случайный токен. Все запросы параметризованы, что защищает от SQL-инъекций. Данные проверяются на трёх уровнях: в форме, в логике регистрации и ограничениями самой базы (UNIQUE, CHECK). Интерфейс оформлен с помощью фреймворка Bootstrap 5: карточки, плавающие поля, стили валидации, таблицы, навигация и модальное окно. Все 37 тестовых сценариев пройдены.</p>
+        <p><b>Ограничение:</b> база хранится в браузере каждого посетителя отдельно. Для общей базы между всеми пользователями нужен сервер или облачная база данных (например, Supabase или Firebase).</p>
+    </section>
+
+    <footer>Web Labs · Лабораторная работа №4 · 2026</footer>
+</div>
+</body>
+</html>
